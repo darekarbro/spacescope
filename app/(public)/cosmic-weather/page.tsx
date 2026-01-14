@@ -11,7 +11,7 @@ export default function CosmicWeatherPage() {
             <CardTitle>Solar Storms</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Real-time solar activity data...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Real-time solar activity data...</p>
           </CardContent>
         </Card>
 
@@ -20,7 +20,7 @@ export default function CosmicWeatherPage() {
             <CardTitle>Aurora Forecast</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Aurora visibility predictions...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Aurora visibility predictions...</p>
           </CardContent>
         </Card>
 
@@ -29,7 +29,7 @@ export default function CosmicWeatherPage() {
             <CardTitle>Radiation Alerts</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Current radiation levels...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Current radiation levels...</p>
           </CardContent>
         </Card>
 
@@ -38,7 +38,7 @@ export default function CosmicWeatherPage() {
             <CardTitle>Geomagnetic Index</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">KP Index and solar flux data...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">KP Index and solar flux data...</p>
           </CardContent>
         </Card>
       </div>

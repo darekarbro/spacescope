@@ -9,12 +9,17 @@ export interface Mission {
   status: MissionStatus;
   launch_date?: string; // ISO 8601
   expected_end_date?: string;
+  return_date?: string;
+  banner_image?: string;
   description: string;
   objectives?: string[];
   image_url?: string;
   website_url?: string;
   live_tracking_url?: string;
   tags?: string[];
+  timeline?: { date: string; title: string; description?: string }[];
+  crew?: { name: string; role: string; country?: string; photo?: string }[];
+  related_ids?: string[];
 }
 
 export interface MissionTimeline {

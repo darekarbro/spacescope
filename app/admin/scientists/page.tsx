@@ -12,9 +12,9 @@ export default function AdminScientistsPage() {
               <CardTitle>Scientist #{i}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">Email: scientist{i}@example.com</p>
-              <p className="text-sm text-gray-600 mb-4">Institution: University Name</p>
-              <p className="text-sm text-gray-600 mb-4">Submissions: 5</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">Email: scientist{i}@example.com</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">Institution: University Name</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">Submissions: 5</p>
             </CardContent>
           </Card>
         ))}
