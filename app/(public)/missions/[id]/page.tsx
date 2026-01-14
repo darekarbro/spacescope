@@ -2,8 +2,9 @@ import { getMissionById } from '@/mock/missionsData';
 import MissionDetail from '@/components/missions/MissionDetail';
 import Link from 'next/link';
 
-export default function MissionDetailPage({ params }: { params: { id: string } }) {
-  const mission = getMissionById(params.id);
+export default async function MissionDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  const resolved = await params;
+  const mission = getMissionById(resolved.id);
 
   if (!mission) {
     return (

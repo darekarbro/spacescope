@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <rect width="100%" height="100%" fill="#071122" />
+  <circle cx="120" cy="80" r="50" fill="#a5f3fc" />
+  <rect x="40" y="150" width="160" height="60" rx="8" fill="#071122" />
+  <text x="120" y="170" font-family="Inter, Arial, sans-serif" font-size="16" fill="#001219" text-anchor="middle">Aisha Khan</text>
+  <text x="120" y="190" font-family="Inter, Arial, sans-serif" font-size="12" fill="#9be7ff" text-anchor="middle">Science Ops</text>
+</svg>
