@@ -17,7 +17,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className="bg-background">
-        <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
         <AuthProvider>
           {/* Client boundary for conditional nav/footer */}
           <RootLayoutClient>{children}</RootLayoutClient>
