@@ -19,7 +19,7 @@ export default function HeroSection() {
 
           <div className="mx-auto max-w-xl space-y-6 text-center lg:mx-0 lg:text-start">
             <h1 className="text-4xl lg:text-5xl font-semibold">
-              SpaceScope — Explore, Learn & Stay Connected with the Universe
+              SpaceScope - Explore, Learn, Connected 
             </h1>
 
             <p className="text-muted-foreground text-lg leading-relaxed">
