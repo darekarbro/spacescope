@@ -106,6 +106,7 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [isLoadingRoute, setIsLoadingRoute] = React.useState(false);
   const [isRequestingLocation, setIsRequestingLocation] = React.useState(false);
+  const [isMounted, setIsMounted] = React.useState(false);
   const {
     selectedLocationId,
     searchQuery,
@@ -127,6 +128,10 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
   } = useMapsStore();
 
   const isDesktop = useMediaQuery("(min-width: 640px)");
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   React.useEffect(() => {
     if (isDesktop && !isPanelVisible) {
@@ -301,6 +306,10 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
   const getTagName = (tagId: string) => {
     return allTags.find((t: any) => t.id === tagId)?.name || tagId;
   };
+
+  if (!isMounted) {
+    return null;
+  }
 
   if (!isPanelVisible) {
     return (
