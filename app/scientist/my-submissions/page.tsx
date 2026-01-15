@@ -12,10 +12,10 @@ export default function MySubmissionsPage() {
               <CardTitle>Event #{i}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-2">Status: <span className={i % 2 === 0 ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'}>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-2">Status: <span className={i % 2 === 0 ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'}>
                 {i % 2 === 0 ? 'Approved' : 'Pending'}
               </span></p>
-              <p className="text-sm text-gray-600">Submitted: Jan {10 + i}, 2026</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">Submitted: Jan {10 + i}, 2026</p>
             </CardContent>
           </Card>
         ))}

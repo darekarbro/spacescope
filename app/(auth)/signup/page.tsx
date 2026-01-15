@@ -68,7 +68,7 @@ export default function SignupPage() {
           />
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               I am a...
             </label>
             <select
@@ -95,7 +95,7 @@ export default function SignupPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <p className="text-center text-sm text-neutral-700 dark:text-neutral-300 mt-4">
           Already have an account?{' '}
           <Link href="/login" className="text-indigo-600 font-semibold">
             Login

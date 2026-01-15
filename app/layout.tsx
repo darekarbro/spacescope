@@ -16,7 +16,8 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-gray-50">
+      <body suppressHydrationWarning className="bg-background">
+        <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
         <AuthProvider>
           {/* Client boundary for conditional nav/footer */}
           <RootLayoutClient>{children}</RootLayoutClient>

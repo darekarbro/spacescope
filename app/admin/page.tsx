@@ -40,7 +40,7 @@ export default function AdminDashboard() {
             <CardTitle>Recent Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Event moderation queue...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Event moderation queue...</p>
           </CardContent>
         </Card>
 
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
             <CardTitle>Manage Scientists</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">User account management...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">User account management...</p>
           </CardContent>
         </Card>
       </div>

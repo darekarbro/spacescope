@@ -11,7 +11,7 @@ export default function LearnPage() {
             <CardTitle>Quizzes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Test your space knowledge...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Test your space knowledge...</p>
           </CardContent>
         </Card>
 
@@ -20,7 +20,7 @@ export default function LearnPage() {
             <CardTitle>Infographics</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Visual learning resources...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Visual learning resources...</p>
           </CardContent>
         </Card>
 
@@ -29,7 +29,7 @@ export default function LearnPage() {
             <CardTitle>Articles</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">In-depth space topics...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">In-depth space topics...</p>
           </CardContent>
         </Card>
 
@@ -38,7 +38,7 @@ export default function LearnPage() {
             <CardTitle>Experiments</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Interactive space simulations...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Interactive space simulations...</p>
           </CardContent>
         </Card>
       </div>

@@ -12,7 +12,7 @@ export default function AdminEventsPage() {
               <CardTitle>Event Submission #{i}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">Submitted by: Scientist Name</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">Submitted by: Scientist Name</p>
               <div className="flex gap-2">
                 <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
                   Approve
