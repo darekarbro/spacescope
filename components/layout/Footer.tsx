@@ -1,39 +1,100 @@
-'use client';
+"use client";
+
+import { Logo } from "@/components/page-layouts/components/logo";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
+import {
+  Facebook as FacebookIcon,
+  Github as GithubIcon,
+  Instagram as InstagramIcon,
+  Linkedin as LinkedinIcon,
+  Twitter as TwitterIcon,
+  Youtube as YoutubeIcon,
+} from "lucide-react";
 
 export function Footer() {
+  const company = [
+    { title: "About Us", href: "#" },
+    { title: "Careers", href: "#" },
+    { title: "Brand assets", href: "#" },
+    { title: "Privacy Policy", href: "#" },
+    { title: "Terms of Service", href: "#" },
+  ];
+
+  const resources = [
+    { title: "Blog", href: "#" },
+    { title: "Help Center", href: "#" },
+    { title: "Contact Support", href: "#" },
+    { title: "Community", href: "#" },
+    { title: "Security", href: "#" },
+  ];
+
+  const socialLinks = [
+    { icon: FacebookIcon, link: "#" },
+    { icon: GithubIcon, link: "#" },
+    { icon: InstagramIcon, link: "#" },
+    { icon: LinkedinIcon, link: "#" },
+    { icon: TwitterIcon, link: "#" },
+    { icon: YoutubeIcon, link: "#" },
+  ];
+
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div>
-            <h3 className="text-white font-bold mb-4">SpaceScope</h3>
-            <p className="text-sm">Explore, Learn & Stay Connected with the Universe</p>
+    <footer className="relative">
+      <div
+        className={cn(
+          "mx-auto max-w-5xl lg:border-x",
+          "dark:bg-[radial-gradient(35%_80%_at_30%_0%,--theme(--color-foreground/.1),transparent)]"
+        )}
+      >
+        <div className="absolute inset-x-0 h-px w-full bg-border" />
+        <div className="grid max-w-5xl grid-cols-6 gap-6 p-4">
+          <div className="col-span-6 flex flex-col gap-4 pt-5 md:col-span-4">
+            <div className="w-max">
+              <Logo />
+            </div>
+            <p className="max-w-sm text-balance font-mono text-muted-foreground text-sm">
+              A comprehensive financial technology platform.
+            </p>
+            <div className="flex gap-2">
+              {socialLinks.map((item, index) => (
+                <Button
+                  key={`social-${item.link}-${index}`}
+                  size="icon-sm"
+                  variant="outline"
+                >
+                  <a href={item.link} target="_blank" rel="noreferrer">
+                    <item.icon className="size-3.5" />
+                  </a>
+                </Button>
+              ))}
+            </div>
           </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/explore" className="hover:text-white">Events</a></li>
-              <li><a href="/cosmic-weather" className="hover:text-white">Cosmic Weather</a></li>
-              <li><a href="/missions" className="hover:text-white">Missions</a></li>
-            </ul>
+          <div className="col-span-3 w-full md:col-span-1">
+            <span className="text-muted-foreground text-xs">Resources</span>
+            <div className="mt-2 flex flex-col gap-2">
+              {resources.map(({ href, title }) => (
+                <a className="w-max text-sm hover:underline" href={href} key={title}>
+                  {title}
+                </a>
+              ))}
+            </div>
           </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Learn</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/earth-impact" className="hover:text-white">Earth Impact</a></li>
-              <li><a href="/learn" className="hover:text-white">Learning Zone</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">About</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white">Contact</a></li>
-              <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-            </ul>
+          <div className="col-span-3 w-full md:col-span-1">
+            <span className="text-muted-foreground text-xs">Company</span>
+            <div className="mt-2 flex flex-col gap-2">
+              {company.map(({ href, title }) => (
+                <a className="w-max text-sm hover:underline" href={href} key={title}>
+                  {title}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="border-t border-gray-700 pt-8 text-center text-sm">
-          <p>&copy; 2026 SpaceScope. All rights reserved. | Made for the Hack The Space Hackathon</p>
+        <div className="absolute inset-x-0 h-px w-full bg-border" />
+        <div className="flex max-w-4xl flex-col justify-between gap-2 py-4">
+          <p className="text-center font-light text-muted-foreground text-sm">
+            &copy; {new Date().getFullYear()} efferd, All rights reserved
+          </p>
         </div>
       </div>
     </footer>

@@ -1,76 +1,99 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth } from '@/hooks';
-import { Button } from '@/components/ui/Button';
+import Link from "next/link";
+import React, { useState } from "react";
+import { useAuth } from "@/hooks";
+import {
+  Navbar as NavShell,
+  NavBody,
+  NavItems,
+  MobileNav,
+  MobileNavHeader,
+  MobileNavMenu,
+  MobileNavToggle,
+  NavbarLogo,
+  NavbarButton,
+} from "@/components/ui";
+
+const LINKS = [
+  { name: "Events", link: "/explore" },
+  { name: "Cosmic Weather", link: "/cosmic-weather" },
+  { name: "Missions", link: "/missions" },
+  { name: "Earth Impact", link: "/earth-impact" },
+  { name: "Learn", link: "/learn" },
+];
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const toggleMobile = () => setMobileOpen((s) => !s);
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            SpaceScope
-          </Link>
+    <NavShell>
+      <NavBody>
+        <div className="flex items-center">
+          <NavbarLogo />
+        </div>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/explore" className="text-gray-700 hover:text-indigo-600">
-              Events
-            </Link>
-            <Link href="/cosmic-weather" className="text-gray-700 hover:text-indigo-600">
-              Cosmic Weather
-            </Link>
-            <Link href="/missions" className="text-gray-700 hover:text-indigo-600">
-              Missions
-            </Link>
-            <Link href="/earth-impact" className="text-gray-700 hover:text-indigo-600">
-              Earth Impact
-            </Link>
-            <Link href="/learn" className="text-gray-700 hover:text-indigo-600">
-              Learn
-            </Link>
-          </div>
+        <NavItems items={LINKS} />
 
-          {/* Auth Section */}
-          <div className="flex items-center gap-4">
-            {isAuthenticated && user ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">{user.name}</span>
-                  {user.role === 'scientist' && (
-                    <Link href="/scientist" className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                      Dashboard
-                    </Link>
-                  )}
-                  {user.role === 'admin' && (
-                    <Link href="/admin" className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                      Admin
-                    </Link>
-                  )}
-                </div>
-                <Button size="sm" variant="outline" onClick={logout}>
-                  Logout
-                </Button>
-              </>
+        <div className="flex items-center gap-2">
+          {isAuthenticated && user ? (
+            <>
+              <span className="hidden sm:inline text-sm">{user.name}</span>
+              {user.role === "scientist" && (
+                <NavbarButton href="/scientist" as="a">Dashboard</NavbarButton>
+              )}
+              {user.role === "admin" && (
+                <NavbarButton href="/admin" as="a" variant="dark">
+                  Admin
+                </NavbarButton>
+              )}
+              <NavbarButton as="button" onClick={logout} variant="secondary">
+                Logout
+              </NavbarButton>
+            </>
+          ) : (
+            <>
+              <NavbarButton href="/login" as="a" variant="secondary">
+                Login
+              </NavbarButton>
+              <NavbarButton href="/signup" as="a">Sign Up</NavbarButton>
+            </>
+          )}
+        </div>
+      </NavBody>
+
+      <MobileNav>
+        <MobileNavHeader>
+          <NavbarLogo />
+          <MobileNavToggle isOpen={mobileOpen} onClick={toggleMobile} />
+        </MobileNavHeader>
+        <MobileNavMenu isOpen={mobileOpen} onClose={() => setMobileOpen(false)}>
+          {LINKS.map((l) => (
+            <Link key={l.link} href={l.link} onClick={() => setMobileOpen(false)}>
+              <a className="w-full py-2">{l.name}</a>
+            </Link>
+          ))}
+          <div className="w-full pt-4">
+            {isAuthenticated ? (
+              <button className="w-full text-left" onClick={logout}>
+                Logout
+              </button>
             ) : (
-              <>
+              <div className="flex w-full gap-2">
                 <Link href="/login">
-                  <Button size="sm" variant="ghost">
-                    Login
-                  </Button>
+                  <a className="flex-1">Login</a>
                 </Link>
                 <Link href="/signup">
-                  <Button size="sm">Sign Up</Button>
+                  <a className="flex-1">Sign Up</a>
                 </Link>
-              </>
+              </div>
             )}
           </div>
-        </div>
-      </div>
-    </nav>
+        </MobileNavMenu>
+      </MobileNav>
+    </NavShell>
   );
 }
