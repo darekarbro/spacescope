@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Logo } from "@/components/page-layouts/components/logo";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
