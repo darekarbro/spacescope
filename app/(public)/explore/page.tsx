@@ -12,7 +12,7 @@ export default function EventsPage() {
               <CardTitle>Event #{i}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600">Event details coming soon...</p>
+              <p className="text-sm text-neutral-700 dark:text-neutral-300">Event details coming soon...</p>
             </CardContent>
           </Card>
         ))}

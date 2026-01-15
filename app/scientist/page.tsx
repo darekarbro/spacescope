@@ -47,7 +47,7 @@ export default function ScientistDashboard() {
             <CardTitle>Recent Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">Your recent submissions...</p>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300">Your recent submissions...</p>
           </CardContent>
         </Card>
 

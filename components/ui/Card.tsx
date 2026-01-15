@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'outline' | 'elevated';
@@ -9,18 +10,30 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => {
-    const variants = {
-      default: 'bg-white border border-gray-200 rounded-lg',
-      outline: 'border-2 border-gray-300 rounded-lg',
-      elevated: 'bg-white rounded-lg shadow-lg',
+    const baseClasses = 'rounded-lg p-6';
+
+    // Use CSS variables with fallbacks to ensure theme values apply
+    const bgVar = "var(--color-card, var(--card, #ffffff))";
+    const fgVar = "var(--color-card-foreground, var(--card-foreground, #0f172a))";
+    const borderVar = "var(--color-border, var(--border, #e5e7eb))";
+
+    const style: React.CSSProperties = {};
+
+    let classNames = baseClasses;
+
+    // Use BackgroundGradient as a common border for all card variants
+    const innerStyle: React.CSSProperties = {
+      backgroundColor: bgVar,
+      color: fgVar,
+      borderColor: borderVar,
     };
 
+    const innerClasses = cn('rounded-lg p-6', variant === 'elevated' ? 'shadow-lg' : '', className);
+
     return (
-      <div
-        ref={ref}
-        className={cn(variants[variant], 'p-6', className)}
-        {...props}
-      />
+      <BackgroundGradient containerClassName="p-[2px] rounded-lg" radiusClass="rounded-lg">
+        <div ref={ref} className={innerClasses} style={innerStyle} {...props} />
+      </BackgroundGradient>
     );
   }
 );
