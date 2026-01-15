@@ -19,6 +19,10 @@
     "hooks": "@/hooks"
   },
   "registries": {
+<<<<<<< HEAD
+    "@bundui": "https://bundui.io/r/{name}.json"
+=======
     "@aceternity": "https://ui.aceternity.com/registry/{name}.json"
+>>>>>>> main
   }
 }
