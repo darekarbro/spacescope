@@ -19,10 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className="bg-background">
-        {/* @ts-expect-error - AuthProvider children type mismatch */}
         <AuthProvider>
           {/* Client boundary for conditional nav/footer */}
-          {/* @ts-expect-error - RootLayoutClient children type mismatch */}
           <RootLayoutClient>{children}</RootLayoutClient>
         </AuthProvider>
       </body>
