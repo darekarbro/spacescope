@@ -1,4 +1,4 @@
-import { Sun } from "lucide-react";
+import { Sun, CloudSun, Satellite, ActivitySquare } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -48,42 +48,47 @@ export default function HeroSection() {
                 className="aspect-4/3 w-full object-cover"
               />
             </Card>
-            <Card className="bg-muted aspect-4/3 border-none shadow-none">
-              <CardContent className="flex h-full flex-col justify-end">
-                <div>
-                  <div className="mb-2 text-4xl">120+</div>
-                  <div className="text-muted-foreground">Upcoming sky events tracked</div>
+            <Card className="bg-muted aspect-4/3 border-none shadow-none flex items-center justify-center">
+              <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                <div className="flex flex-col items-center">
+                  <ActivitySquare className="mb-3 text-primary" size={40} />
+                  <div className="mb-1 text-3xl font-bold text-gray-900">120+</div>
+                  <div className="text-muted-foreground text-center text-base">Upcoming sky events tracked</div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="-mb-8 space-y-6">
-            <Card className="bg-muted aspect-4/3 border-none shadow-none">
-              <CardContent className="flex h-full flex-col justify-end">
-                <div>
-                  <div className="mb-2 text-4xl">Realtime</div>
-                  <div className="text-muted-foreground">Cosmic weather & alerts</div>
+            <Card className="bg-muted aspect-4/3 border-none shadow-none flex items-center justify-center">
+              <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                <div className="flex flex-col items-center">
+                  <CloudSun className="mb-3 text-blue-500" size={40} />
+                  <div className="mb-1 text-3xl font-bold text-gray-900">Realtime</div>
+                  <div className="text-muted-foreground text-center text-base">Cosmic weather & alerts</div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="aspect-4/3 border-none bg-amber-50 shadow-none dark:bg-amber-950">
-              <CardContent className="flex h-full flex-col justify-end">
-                <div className="mb-2 text-4xl">Missions</div>
-                <div className="text-muted-foreground mb-4">Visual timeline of missions</div>
-                <div className="flex -space-x-2">
-                  <Avatar className="border-background border-2">
-                    <AvatarImage src="/images/avatar1.jpg" />
-                    <AvatarFallback>SS</AvatarFallback>
-                  </Avatar>
-                  <Avatar className="border-background border-2">
-                    <AvatarImage src="/images/avatar2.jpg" />
-                    <AvatarFallback>EN</AvatarFallback>
-                  </Avatar>
-                  <Avatar className="border-background border-2">
-                    <AvatarImage src="/images/avatar3.jpg" />
-                    <AvatarFallback>ST</AvatarFallback>
-                  </Avatar>
+            <Card className="aspect-4/3 border-none bg-amber-50 shadow-none dark:bg-amber-950 flex items-center justify-center">
+              <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                <div className="flex flex-col items-center">
+                  <Satellite className="mb-3 text-yellow-600 dark:text-yellow-400" size={40} />
+                  <div className="mb-1 text-3xl font-bold text-gray-900">Missions</div>
+                  <div className="text-muted-foreground text-center text-base mb-2">Visual timeline of missions</div>
+                  <div className="flex -space-x-2">
+                    <Avatar className="border-background border-2">
+                      <AvatarImage src="/avatar2.jpeg" />
+                      <AvatarFallback>SS</AvatarFallback>
+                    </Avatar>
+                    <Avatar className="border-background border-2">
+                      <AvatarImage src="/avatar1.jpeg" />
+                      <AvatarFallback>EN</AvatarFallback>
+                    </Avatar>
+                    <Avatar className="border-background border-2">
+                      <AvatarImage src="/avatar3.jpeg" />
+                      <AvatarFallback>ST</AvatarFallback>
+                    </Avatar>
+                  </div>
                 </div>
               </CardContent>
             </Card>
