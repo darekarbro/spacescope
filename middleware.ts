@@ -9,8 +9,8 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get('access_token')?.value;
   const { pathname } = request.nextUrl;
 
-  // Protected routes
-  if (pathname.startsWith('/admin') || pathname.startsWith('/scientist')) {
+  // Protected routes (only scientist routes are protected now)
+  if (pathname.startsWith('/scientist')) {
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -20,5 +20,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/scientist/:path*'],
+  matcher: ['/scientist/:path*'],
 };
