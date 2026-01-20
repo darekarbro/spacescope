@@ -39,9 +39,9 @@ export const WEATHER_ENDPOINTS = {
 
 // Missions Endpoints
 export const MISSIONS_ENDPOINTS = {
-  LIST: `${API_BASE}/api/missions/`,
-  DETAIL: (id: string) => `${API_BASE}/api/missions/${id}/`,
-  TIMELINE: `${API_BASE}/api/missions/timeline/`,
+  LIST: `${API_BASE}/api/v1/missions/`,
+  DETAIL: (id: string) => `${API_BASE}/api/v1/missions/${id}/`,
+  TIMELINE: `${API_BASE}/api/v1/missions/timeline/`,
 };
 
 // Earth Impact / Satellite Data Endpoints

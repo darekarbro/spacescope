@@ -1,10 +1,58 @@
-import { getMissionById } from '@/mock/missionsData';
 import MissionDetail from '@/components/missions/MissionDetail';
 import Link from 'next/link';
+import { MISSIONS_ENDPOINTS } from '@/lib/api/endpoints';
+import type { Mission } from '@/types/mission';
+
+async function getMission(id: string): Promise<Mission | null> {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/v1/missions/${id}/`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const result = await res.json();
+    return result.data || null;
+    
+  } catch (error) {
+    console.error('Error fetching mission:', error);
+    return null;
+  }
+}
+
+async function getAllMissions(): Promise<Mission[]> {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/v1/missions/', {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const result = await res.json();
+    return result.data || [];
+    
+  } catch (error) {
+    console.error('Error fetching missions:', error);
+    return [];
+  }
+}
 
 export default async function MissionDetailPage({ params }: { params: { id: string } | Promise<{ id: string }> }) {
   const resolved = await params;
-  const mission = getMissionById(resolved.id);
+  const [mission, allMissions] = await Promise.all([
+    getMission(resolved.id),
+    getAllMissions(),
+  ]);
 
   if (!mission) {
     return (
@@ -18,5 +66,5 @@ export default async function MissionDetailPage({ params }: { params: { id: stri
     );
   }
 
-  return <MissionDetail mission={mission} />;
+  return <MissionDetail mission={mission} allMissions={allMissions} />;
 }

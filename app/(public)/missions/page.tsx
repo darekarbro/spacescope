@@ -1,10 +1,35 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Timeline } from '@/components/ui/timeline';
-import MISSIONS from '@/mock/missionsData';
+import { MISSIONS_ENDPOINTS } from '@/lib/api/endpoints';
+import type { Mission } from '@/types/mission';
 
-export default function MissionsPage() {
-  const data = MISSIONS.map((m) => ({
+async function getMissions(): Promise<Mission[]> {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/api/v1/missions/', {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const result = await res.json();
+    return result.data || [];
+    
+  } catch (error) {
+    console.error('Error fetching missions:', error);
+    return [];
+  }
+}
+
+export default async function MissionsPage() {
+  const missions = await getMissions();
+  
+  const data = missions.map((m) => ({
     title: `${m.name} — ${m.launch_date?.slice(0, 4) ?? ''}`,
     content: (
       <Link href={`/missions/${m.id}`} className="block">

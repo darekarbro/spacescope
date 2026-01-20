@@ -1,14 +1,14 @@
 import React from 'react';
 import SimpleMarkdown from '@/components/ui/SimpleMarkdown';
 import Link from 'next/link';
-import { MISSIONS } from '@/mock/missionsData';
 import type { Mission } from '@/types/mission';
 
 interface Props {
   mission: Mission;
+  allMissions?: Mission[];
 }
 
-const MissionDetail: React.FC<Props> = ({ mission }) => {
+const MissionDetail: React.FC<Props> = ({ mission, allMissions = [] }) => {
   const launch = mission.launch_date ? new Date(mission.launch_date) : null;
   const ret = mission.return_date ? new Date(mission.return_date) : null;
 
@@ -20,7 +20,7 @@ const MissionDetail: React.FC<Props> = ({ mission }) => {
   }
 
   const related = (mission.related_ids || [])
-    .map((id) => MISSIONS.find((m) => m.id === id))
+    .map((id) => allMissions.find((m) => m.id === id))
     .filter(Boolean) as Mission[];
 
   return (
