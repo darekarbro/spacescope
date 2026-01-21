@@ -5,7 +5,7 @@ export default function CTASection() {
     <section className="py-10 lg:py-16">
       <div className="mx-auto max-w-5xl px-4">
           <div className="relative rounded-2xl overflow-hidden">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3')] bg-cover bg-bottom" />
+            <div className="absolute inset-0 bg-[url('/image4.jpg')] bg-cover bg-bottom" />
             <div className="absolute inset-0 bg-black/55" />
 
             <div className="relative z-10 px-8 py-10 md:px-16 md:py-20">

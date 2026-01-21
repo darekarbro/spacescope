@@ -2,43 +2,35 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import {
   MapPin,
   Heart,
-  Star,
-  Eye,
   Clock,
   Search,
   X,
-  Route,
-  Loader2,
-  Navigation,
-  ArrowUpDown,
-  ArrowDownAZ,
-  ArrowUpAZ,
-  CalendarArrowDown,
-  CalendarArrowUp,
-  TrendingUp,
-  Check,
+  Sparkles,
+  Flame,
+  Zap,
+  Trees,
+  Landmark,
+  Rocket,
+  Eye,
+  Calendar,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useMapsStore } from "@/stores/maps-store";
-import {
-  categories,
-  tags as allTags,
-  type Location,
-} from "@/mock/locations";
+  eventCategories,
+  mockEvents,
+  type CelestialEvent,
+} from "@/mock/events";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "usehooks-ts";
+import { useSavedEvents } from "@/hooks/useSavedEvents";
+import { useEventSelection } from "@/stores/event-selection-store";
 
 type PanelMode = "all" | "favorites" | "recents";
 
@@ -48,28 +40,25 @@ interface MapsPanelProps {
 
 const panelConfig = {
   all: {
-    title: "All Locations",
+    title: "All Events",
     emptyIcon: MapPin,
-    emptyTitle: "No locations found",
+    emptyTitle: "No events found",
     emptyDescription: null,
-    getSubtitle: (count: number) =>
-      `${count} location${count !== 1 ? "s" : ""}`,
+    getSubtitle: (count: number) => `${count} event${count !== 1 ? "s" : ""}`,
   },
   favorites: {
-    title: "Favorites",
+    title: "Saved Events",
     emptyIcon: Heart,
-    emptyTitle: "No favorites yet",
-    emptyDescription:
-      "Click the heart icon on a location to add it to favorites",
-    getSubtitle: (count: number) =>
-      `${count} favorite${count !== 1 ? "s" : ""}`,
+    emptyTitle: "No saved events yet",
+    emptyDescription: "Click the save icon on an event to add it to your list",
+    getSubtitle: (count: number) => `${count} saved event${count !== 1 ? "s" : ""}`,
   },
   recents: {
-    title: "Recent Locations",
+    title: "Upcoming Events",
     emptyIcon: Clock,
-    emptyTitle: "No recent locations",
+    emptyTitle: "No upcoming events",
     emptyDescription: null,
-    getSubtitle: (count: number) => `Last ${count} added locations`,
+    getSubtitle: (count: number) => `Next ${count} events`,
   },
 };
 
@@ -92,6 +81,19 @@ function calculateDistance(
   return R * c;
 }
 
+// Map event category IDs to Lucide icons
+function getCategoryIcon(categoryId: string) {
+  const iconMap: Record<string, React.ReactNode> = {
+    meteor: <Trees className="size-5" />,
+    eclipse: <Flame className="size-5" />,
+    conjunction: <Zap className="size-5" />,
+    comet: <Sparkles className="size-5" />,
+    aurora: <Sparkles className="size-5" />,
+    iss: <Rocket className="size-5" />,
+  };
+  return iconMap[categoryId] || <MapPin className="size-5" />;
+}
+
 function formatDistance(km: number): string {
   if (km < 1) {
     return `${Math.round(km * 1000)} m`;
@@ -104,208 +106,64 @@ function formatDistance(km: number): string {
 
 export function MapsPanel({ mode = "all" }: MapsPanelProps) {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-  const [isLoadingRoute, setIsLoadingRoute] = React.useState(false);
-  const [isRequestingLocation, setIsRequestingLocation] = React.useState(false);
+  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [isMounted, setIsMounted] = React.useState(false);
-  const {
-    selectedLocationId,
-    searchQuery,
-    sortBy,
-    selectLocation,
-    toggleFavorite,
-    setSearchQuery,
-    setSortBy,
-    getFilteredLocations,
-    getFavoriteLocations,
-    getRecentLocations,
-    userLocation,
-    routeDestinationId,
-    setRouteDestination,
-    setUserLocation,
-    clearRoute,
-    isPanelVisible,
-    setPanelVisible,
-  } = useMapsStore();
-
-  const isDesktop = useMediaQuery("(min-width: 640px)");
+  const [isPanelVisible, setPanelVisible] = React.useState(true);
+  const [displayMode, setDisplayMode] = React.useState<"all" | "favorites" | "recents">(mode);
+  
+  // Read mode from URL search params, fallback to prop
+  const searchParams = useSearchParams();
+  const { savedEventIds, toggleSaved, isSaved, isMounted: savedEventsReady } = useSavedEvents();
+  const { selectEvent } = useEventSelection();
 
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Update displayMode when URL search params change
   React.useEffect(() => {
-    if (isDesktop && !isPanelVisible) {
-      setPanelVisible(true);
-    }
-  }, [isDesktop, isPanelVisible, setPanelVisible]);
-
-  const getDistance = React.useCallback(
-    (location: Location) => {
-      if (!userLocation) return null;
-      return calculateDistance(
-        userLocation.lat,
-        userLocation.lng,
-        location.coordinates.lat,
-        location.coordinates.lng
-      );
-    },
-    [userLocation]
-  );
-
-  const getLocationFromIP = React.useCallback(async (): Promise<{
-    lat: number;
-    lng: number;
-  } | null> => {
-    try {
-      const response = await fetch("https://ipapi.co/json/");
-      const data = await response.json();
-      if (data.latitude && data.longitude) {
-        return { lat: data.latitude, lng: data.longitude };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const requestUserLocation = React.useCallback(() => {
-    return new Promise<{ lat: number; lng: number } | null>((resolve) => {
-      setIsRequestingLocation(true);
-
-      const tryIPFallback = async () => {
-        const ipLocation = await getLocationFromIP();
-        setIsRequestingLocation(false);
-        if (ipLocation) {
-          setUserLocation(ipLocation);
-          resolve(ipLocation);
-        } else {
-          alert("Unable to get your location. Please try again later.");
-          resolve(null);
-        }
-      };
-
-      if (!("geolocation" in navigator)) {
-        tryIPFallback();
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const location = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(location);
-          setIsRequestingLocation(false);
-          resolve(location);
-        },
-        () => {
-          tryIPFallback();
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 }
-      );
-    });
-  }, [setUserLocation, getLocationFromIP]);
-
-  const getLocations = () => {
-    switch (mode) {
-      case "favorites":
-        return getFavoriteLocations();
-      case "recents":
-        return getRecentLocations();
-      default:
-        return getFilteredLocations();
-    }
-  };
-
-  const rawLocations = getLocations();
-  const locations = React.useMemo(() => {
-    if (!selectedLocationId) return rawLocations;
-    const selected = rawLocations.find((l: any) => l.id === selectedLocationId);
-    if (!selected) return rawLocations;
-    return [
-      selected,
-      ...rawLocations.filter((l: any) => l.id !== selectedLocationId),
-    ];
-  }, [rawLocations, selectedLocationId]);
-
-  const config = panelConfig[mode];
-  const EmptyIcon = config.emptyIcon;
-
-  React.useEffect(() => {
-    if (selectedLocationId) {
-      const isInList = rawLocations.some((l: any) => l.id === selectedLocationId);
-      if (!isInList) {
-        selectLocation(null);
-        clearRoute();
-      }
-    }
-  }, [rawLocations, selectedLocationId, selectLocation, clearRoute]);
-
-  React.useEffect(() => {
-    if (selectedLocationId && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [selectedLocationId]);
-
-  const handleLocationClick = (location: Location) => {
-    if (selectedLocationId === location.id) {
-      selectLocation(null);
+    if (!isMounted) return;
+    
+    const urlMode = searchParams?.get("mode");
+    if (urlMode === "favorites" || urlMode === "recents") {
+      setDisplayMode(urlMode);
+    } else if (urlMode === "all") {
+      setDisplayMode("all");
+    } else if (mode === "favorites" || mode === "recents") {
+      setDisplayMode(mode);
     } else {
-      selectLocation(location.id);
+      setDisplayMode("all");
     }
-  };
+  }, [searchParams, isMounted, mode]);
 
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    selectLocation(null);
-    clearRoute();
-  };
+  // Get category filter from search params
+  const selectedCategory = searchParams?.get("category");
 
-  const handleGetDirections = async (
-    e: React.MouseEvent,
-    location: Location
-  ) => {
-    e.stopPropagation();
+  // Filter and sort events
+  let events = mockEvents;
+  
+  // Filter by category if selected
+  if (selectedCategory) {
+    events = events.filter((e) => e.categoryId === selectedCategory);
+  }
+  
+  if (displayMode === "favorites") {
+    events = events.filter((e) => isSaved(e.id));
+  } else if (displayMode === "recents") {
+    events = events.filter((e) => e.isUpcoming);
+  }
+  if (searchQuery) {
+    events = events.filter((e) =>
+      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  // Sort by start date
+  events = events.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
-    if (routeDestinationId === location.id) {
-      clearRoute();
-      return;
-    }
-
-    let currentUserLocation = userLocation;
-
-    if (!currentUserLocation) {
-      currentUserLocation = await requestUserLocation();
-      if (!currentUserLocation) {
-        return;
-      }
-    }
-
-    setIsLoadingRoute(true);
-    setRouteDestination(location.id);
-
-    setTimeout(() => {
-      setIsLoadingRoute(false);
-    }, 1500);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return date.toLocaleDateString();
-  };
-
-  const getTagName = (tagId: string) => {
-    return allTags.find((t: any) => t.id === tagId)?.name || tagId;
-  };
+  const config = panelConfig[displayMode];
+  const EmptyIcon = config.emptyIcon;
 
   if (!isMounted) {
     return null;
@@ -326,17 +184,17 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
 
   return (
     <div className="absolute left-4 top-4 bottom-4 z-20 flex flex-col bg-background rounded-xl shadow-xl border overflow-hidden w-80 sm:w-100">
-      <div className="p-3 border-b flex items-center justify-between">
+      <div className="p-4 border-b bg-linear-to-r from-blue-500/5 via-purple-500/5 to-blue-500/5">
         <div className="">
-          <h2 className="font-semibold flex items-center gap-2">
-            {mode === "recents" && <Clock className="size-4" />}
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            {displayMode === "recents" && <Clock className="size-5" />}
             {config.title}
           </h2>
-          <p className="text-xs text-muted-foreground">
-            {config.getSubtitle(locations.length)}
+          <p className="text-sm text-muted-foreground mt-1">
+            {config.getSubtitle(events.length)}
           </p>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 absolute top-4 right-4">
           <SidebarTrigger className="size-7" />
           <Button
             variant="ghost"
@@ -349,381 +207,168 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
         </div>
       </div>
 
-      <div className="p-2 border-b">
+      <div className="p-3 border-b bg-secondary/30">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search locations..."
+              placeholder="Search events..."
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              className={cn("pl-8 h-9", searchQuery && "pr-8")}
+              className={cn("pl-9 h-9 text-sm border-0 bg-background/60 focus-visible:bg-background", searchQuery && "pr-8")}
             />
             {searchQuery && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 size-7"
+                className="absolute right-1 top-1/2 -translate-y-1/2 size-6"
                 onClick={() => setSearchQuery("")}
               >
                 <X className="size-3.5" />
               </Button>
             )}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="size-9 shrink-0">
-                <ArrowUpDown className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuItem
-                onClick={() => setSortBy("nearest")}
-                className="gap-2"
-              >
-                <Navigation className="size-4" />
-                <span className="flex-1">Nearest</span>
-                {sortBy === "nearest" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("rating")}
-                className="gap-2"
-              >
-                <Star className="size-4" />
-                <span className="flex-1">Best rated</span>
-                {sortBy === "rating" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("visits")}
-                className="gap-2"
-              >
-                <TrendingUp className="size-4" />
-                <span className="flex-1">Most visited</span>
-                {sortBy === "visits" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("date-newest")}
-                className="gap-2"
-              >
-                <CalendarArrowDown className="size-4" />
-                <span className="flex-1">Newest first</span>
-                {sortBy === "date-newest" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("date-oldest")}
-                className="gap-2"
-              >
-                <CalendarArrowUp className="size-4" />
-                <span className="flex-1">Oldest first</span>
-                {sortBy === "date-oldest" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("alpha-az")}
-                className="gap-2"
-              >
-                <ArrowDownAZ className="size-4" />
-                <span className="flex-1">A to Z</span>
-                {sortBy === "alpha-az" && <Check className="size-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSortBy("alpha-za")}
-                className="gap-2"
-              >
-                <ArrowUpAZ className="size-4" />
-                <span className="flex-1">Z to A</span>
-                {sortBy === "alpha-za" && <Check className="size-4" />}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 
       <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-        <div className="p-2 space-y-2">
-          {locations.length === 0 ? (
+        <div className="p-3 space-y-2.5">
+          {events.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <EmptyIcon className="size-8 text-muted-foreground mb-2" />
-              <p className="text-sm font-medium">{config.emptyTitle}</p>
+              <EmptyIcon className="size-12 text-muted-foreground/40 mb-3" />
+              <p className="text-sm font-semibold">{config.emptyTitle}</p>
               {config.emptyDescription && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-2">
                   {config.emptyDescription}
                 </p>
               )}
             </div>
           ) : (
-            locations.map((location: any) => {
-              const category = categories.find(
-                (c: any) => c.id === location.categoryId
-              );
-              const isSelected = selectedLocationId === location.id;
-              const isRouteActive = routeDestinationId === location.id;
-
-              if (isSelected) {
-                return (
-                  <div
-                    key={location.id}
-                    className={cn(
-                      "flex flex-col rounded-lg border-2 overflow-hidden",
-                      isRouteActive
-                        ? "border-green-500 bg-green-500/10"
-                        : "border-primary bg-accent/30"
-                    )}
-                  >
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-start gap-3">
-                          <div
-                            className="flex size-11 shrink-0 items-center justify-center rounded-lg"
-                            style={{ backgroundColor: `${category?.color}20` }}
-                          >
-                            <MapPin
-                              className="size-5"
-                              style={{ color: category?.color }}
-                            />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-base">
-                                {location.name}
-                              </h3>
-                              {location.isFavorite && (
-                                <Heart className="size-4 fill-red-500 text-red-500 shrink-0" />
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {category?.name}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8 shrink-0"
-                          onClick={handleClose}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      </div>
-
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {location.address}
-                      </p>
-
-                      <p className="text-sm mb-4">{location.description}</p>
-
-                      <div className="flex items-center flex-wrap gap-4 mb-4">
-                        {userLocation && (
-                          <div className="flex items-center gap-1.5">
-                            <Navigation className="size-4 text-primary" />
-                            <span className="font-semibold text-primary">
-                              {formatDistance(getDistance(location) || 0)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-semibold">
-                            {location.rating}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            /5
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Eye className="size-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {location.visitCount} visits
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="size-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {formatDate(location.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {location.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {location.tags.map((tag: any) => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {getTagName(tag)}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                            e.stopPropagation();
-                            toggleFavorite(location.id);
-                          }}
-                        >
-                          <Heart
-                            className={cn(
-                              "size-4 mr-2",
-                              location.isFavorite && "fill-red-500 text-red-500"
-                            )}
-                          />
-                          {location.isFavorite ? "Unfavorite" : "Favorite"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          className={cn(
-                            "flex-1",
-                            isRouteActive
-                              ? "bg-green-500 hover:bg-green-600"
-                              : ""
-                          )}
-                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleGetDirections(e, location)}
-                          disabled={isLoadingRoute || isRequestingLocation}
-                        >
-                          {isLoadingRoute || isRequestingLocation ? (
-                            <Loader2 className="size-4 mr-2 animate-spin" />
-                          ) : (
-                            <Route className="size-4 mr-2" />
-                          )}
-                          {isRequestingLocation
-                            ? "Getting location..."
-                            : isRouteActive
-                            ? "Clear route"
-                            : "Get directions"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
+            events.map((event) => {
+              const category = eventCategories.find((c) => c.id === event.categoryId);
+              const isSelected = selectedEventId === event.id;
+              const startDate = new Date(event.start);
+              const formattedDate = startDate.toLocaleDateString("en-US", { 
+                month: "short", 
+                day: "numeric", 
+                year: "2-digit" 
+              });
+              const formattedTime = startDate.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
 
               return (
                 <div
-                  key={location.id}
+                  key={event.id}
                   className={cn(
-                    "group flex flex-col gap-2 rounded-lg border p-3 cursor-pointer transition-colors hover:bg-accent/50",
-                    routeDestinationId === location.id &&
-                      "border-green-500 bg-green-500/10"
+                    "group relative flex flex-col gap-2.5 rounded-lg border p-3.5 cursor-pointer transition-all duration-200",
+                    "hover:shadow-md hover:border-primary/40",
+                    isSelected 
+                      ? "border-primary/60 bg-linear-to-br from-primary/8 via-primary/4 to-transparent shadow-sm"
+                      : "border-secondary/60 bg-linear-to-br from-secondary/20 via-background to-background hover:from-secondary/30"
                   )}
-                  onClick={() => handleLocationClick(location)}
+                  onClick={() => {
+                    const newSelected = isSelected ? null : event.id;
+                    setSelectedEventId(newSelected);
+                    if (newSelected) {
+                      selectEvent(event);
+                    } else {
+                      selectEvent(null);
+                    }
+                  }}
                 >
+                  {/* Header with icon and title */}
                   <div className="flex items-start gap-3">
                     <div
-                      className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: `${category?.color}20` }}
+                      className="flex size-10 shrink-0 items-center justify-center rounded-lg shadow-sm"
+                      style={{ 
+                        backgroundColor: `${category?.color}20`,
+                        borderLeft: `3px solid ${category?.color}`
+                      }}
                     >
-                      <MapPin
-                        className="size-4"
-                        style={{ color: category?.color }}
-                      />
+                      <div style={{ color: category?.color }}>
+                        {getCategoryIcon(event.categoryId)}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-sm truncate">
-                          {location.name}
-                        </h3>
-                        {location.isFavorite && (
-                          <Heart className="size-3 fill-red-500 text-red-500 shrink-0" />
-                        )}
-                        {routeDestinationId === location.id && (
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] h-5 bg-green-500/20 text-green-600"
-                          >
-                            Route active
-                          </Badge>
-                        )}
-                      </div>
+                      <h3 className="font-semibold text-sm leading-tight truncate">
+                        {event.name}
+                      </h3>
                       <p className="text-xs text-muted-foreground truncate">
-                        {location.address}
+                        {category?.name}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Star className="size-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">
-                        {location.rating}
-                      </span>
-                    </div>
+                    {isSelected && (
+                      <div className="absolute top-3.5 right-3.5 size-2 rounded-full bg-primary animate-pulse" />
+                    )}
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {userLocation && (
-                        <div className="flex items-center gap-1">
-                          <Navigation className="size-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {formatDistance(getDistance(location) || 0)}
-                          </span>
-                        </div>
-                      )}
-                      {mode === "recents" && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="size-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(location.createdAt)}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Eye className="size-3 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          {location.visitCount} {mode !== "recents" && "visits"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          e.stopPropagation();
-                          toggleFavorite(location.id);
-                        }}
-                      >
-                        <Heart
-                          className={cn(
-                            "size-3.5",
-                            location.isFavorite && "fill-red-500 text-red-500"
-                          )}
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "size-7",
-                          routeDestinationId === location.id && "text-green-500"
-                        )}
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleGetDirections(e, location)}
-                      >
-                        <Route className="size-3.5" />
-                      </Button>
-                    </div>
+                  {/* Date and visibility info */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground px-0.5">
+                    <Calendar className="size-3.5 shrink-0" />
+                    <span className="truncate">{formattedDate} • {formattedTime}</span>
                   </div>
 
-                  {location.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {location.tags.slice(0, 3).map((tag: any) => (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground px-0.5">
+                    <Globe className="size-3.5 shrink-0" />
+                    <span className="truncate">{event.visibility}</span>
+                  </div>
+
+                  {/* Tags */}
+                  {event.tags && event.tags.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      {event.tags.slice(0, 2).map((tag) => (
                         <Badge
                           key={tag}
                           variant="secondary"
-                          className="text-[10px] h-5"
+                          className="text-[10px] h-5 px-2 font-medium bg-secondary/60 text-secondary-foreground/80"
                         >
-                          {getTagName(tag)}
+                          {tag}
                         </Badge>
                       ))}
-                      {location.tags.length > 3 && (
-                        <Badge variant="outline" className="text-[10px] h-5">
-                          +{location.tags.length - 3}
+                      {event.tags.length > 2 && (
+                        <Badge variant="outline" className="text-[10px] h-5 px-2 font-medium">
+                          +{event.tags.length - 2}
                         </Badge>
                       )}
+                    </div>
+                  )}
+
+                  {/* Expanded details on selection */}
+                  {isSelected && (
+                    <div className="mt-2 pt-3 border-t border-primary/20 animate-in fade-in">
+                      <p className="text-xs leading-relaxed text-muted-foreground mb-3">
+                        {event.description}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className={cn(
+                            "flex-1 h-7 text-xs transition-all font-medium",
+                            isSaved(event.id)
+                              ? "bg-red-500 hover:bg-red-600 text-white"
+                              : "border border-red-200 bg-red-50 hover:bg-red-100 text-red-700"
+                          )}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSaved(event.id);
+                          }}
+                        >
+                          <Heart className={cn("size-3.5 mr-1", isSaved(event.id) && "fill-current")} />
+                          {isSaved(event.id) ? "Saved" : "Save"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 h-7 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Learn more functionality
+                          }}
+                        >
+                          Learn More
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { LocationsSidebar } from "@/components/dashboard/sidebar";
+import { EventsSidebar } from "@/components/dashboard/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -10,7 +10,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <LocationsSidebar />
+      <EventsSidebar />
       <SidebarInset className="overflow-hidden">
         {children}
       </SidebarInset>

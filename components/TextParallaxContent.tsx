@@ -8,21 +8,21 @@ export const TextParallaxContentExample = () => {
   return (
     <div className="bg-white">
       <TextParallaxContent
-        imgUrl="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1600&auto=format&fit=crop"
+        imgUrl="/image1.jpg"
         subheading="Sky Events"
         heading="Explore upcoming meteor showers, eclipses and passes"
       >
         <ExampleContent />
       </TextParallaxContent>
       <TextParallaxContent
-        imgUrl="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?q=80&w=1600&auto=format&fit=crop"
+        imgUrl="/image2.jpg"
         subheading="Cosmic Weather"
         heading="Real-time solar & geomagnetic alerts"
       >
         <ExampleContent />
       </TextParallaxContent>
       <TextParallaxContent
-        imgUrl="https://images.unsplash.com/photo-1468421870903-4df1664ac249?q=80&w=1600&auto=format&fit=crop"
+        imgUrl="/image3.jpg"
         subheading="Missions"
         heading="Mission timelines, data and educational stories"
       >
