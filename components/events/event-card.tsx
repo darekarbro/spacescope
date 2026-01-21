@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Event } from '@/types/event';
+import type { Event } from '@/types/event';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 interface EventCardProps {
   event: Event;
   isLiked: boolean;
-  onLikeToggle: (eventId: string) => void;
+  onLikeToggle: (eventId: number) => void;
   likesCount: number;
 }
 
@@ -24,6 +24,8 @@ const eventTypeColors: Record<string, string> = {
   lunar_eclipse: 'bg-orange-100 text-orange-800',
   solar_eclipse: 'bg-red-100 text-red-800',
   comet: 'bg-indigo-100 text-indigo-800',
+  conjunction: 'bg-pink-100 text-pink-800',
+  transit: 'bg-teal-100 text-teal-800',
   other: 'bg-gray-100 text-gray-800',
 };
 
@@ -77,18 +79,18 @@ export function EventCard({
             </CardDescription>
           </div>
           <Badge
-            className={cn('whitespace-nowrap', eventTypeColors[event.type] || eventTypeColors.other)}
+            className={cn('whitespace-nowrap', eventTypeColors[event.event_type] || eventTypeColors.other)}
           >
-            {event.type.replace('_', ' ')}
+            {event.event_type.replace('_', ' ')}
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {event.image_url && (
+        {event.image && (
           <div className="w-full h-40 rounded-md overflow-hidden bg-gray-200">
             <img
-              src={event.image_url}
+              src={event.image}
               alt={event.title}
               className="w-full h-full object-cover"
             />

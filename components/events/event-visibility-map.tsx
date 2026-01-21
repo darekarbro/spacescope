@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Event } from '@/types/event';
+import type { Event } from '@/types/event';
 
 interface EventVisibilityMapProps {
   event: Event;
@@ -21,7 +21,7 @@ export function EventVisibilityMap({
 
   // Determine zoom level based on event type and visibility
   const getZoomLevel = () => {
-    switch (event.type) {
+    switch (event.event_type) {
       case 'solar_eclipse':
       case 'lunar_eclipse':
         return 3; // Wide area visibility

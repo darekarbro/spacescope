@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Event } from '@/types/event';
+import type { Event } from '@/types/event';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -15,7 +15,7 @@ interface EventDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   isLiked: boolean;
-  onLikeToggle: (eventId: string) => void;
+  onLikeToggle: (eventId: number) => void;
   likesCount: number;
   userLat?: number;
   userLon?: number;
@@ -29,6 +29,8 @@ const eventTypeColors: Record<string, string> = {
   lunar_eclipse: 'bg-orange-100 text-orange-800',
   solar_eclipse: 'bg-red-100 text-red-800',
   comet: 'bg-indigo-100 text-indigo-800',
+  conjunction: 'bg-pink-100 text-pink-800',
+  transit: 'bg-teal-100 text-teal-800',
   other: 'bg-gray-100 text-gray-800',
 };
 
@@ -63,7 +65,7 @@ export function EventDetailModal({
   if (!event) return null;
 
   const eventDate = new Date(event.start_time);
-  const endDate = new Date(event.end_time);
+  const endDate = event.end_time ? new Date(event.end_time) : eventDate;
   const formattedDate = eventDate.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -98,7 +100,7 @@ export function EventDetailModal({
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        text: `Great question about ${event.title}! I'm analyzing the event details for you. This is a ${event.type.replace('_', ' ')} event happening on ${formattedDate}.`,
+        text: `Great question about ${event.title}! I'm analyzing the event details for you. This is a ${event.event_type.replace('_', ' ')} event happening on ${formattedDate}.`,
         timestamp: new Date(),
       };
       setChatMessages((prev) => [...prev, botMessage]);
@@ -117,8 +119,8 @@ export function EventDetailModal({
                 {formattedDate} • {formattedStartTime} - {formattedEndTime}
               </SheetDescription>
             </div>
-            <Badge className={cn('whitespace-nowrap', eventTypeColors[event.type] || eventTypeColors.other)}>
-              {event.type.replace('_', ' ')}
+            <Badge className={cn('whitespace-nowrap', eventTypeColors[event.event_type] || eventTypeColors.other)}>
+              {event.event_type.replace('_', ' ')}
             </Badge>
           </div>
         </SheetHeader>
@@ -126,10 +128,10 @@ export function EventDetailModal({
         <div className="flex-1 overflow-hidden flex gap-6 p-6">
           {/* Left side - Event details and map */}
           <div className="flex-1 overflow-y-auto space-y-6">
-            {event.image_url && (
+            {event.image && (
               <div className="w-full h-60 rounded-lg overflow-hidden bg-gray-200">
                 <img
-                  src={event.image_url}
+                  src={event.image}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />

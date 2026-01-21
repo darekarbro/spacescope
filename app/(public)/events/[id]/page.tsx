@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Loader } from '@/components/ui/Loader';
 import { ArrowLeft, Heart, Send, MapPin, Calendar, Clock } from 'lucide-react';
-import { eventService, EventWithLikes } from '@/lib/services/eventService';
+import { eventService } from '@/lib/services/eventService';
+import type { Event } from '@/types/event';
 import { cn } from '@/lib/utils';
 
 const eventTypeColors: Record<string, string> = {
@@ -18,6 +19,8 @@ const eventTypeColors: Record<string, string> = {
   lunar_eclipse: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
   solar_eclipse: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   comet: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+  conjunction: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+  transit: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
   other: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
 };
 
@@ -33,7 +36,7 @@ export default function EventDetailPage() {
   const router = useRouter();
   const eventId = params.id as string;
 
-  const [event, setEvent] = useState<EventWithLikes | null>(null);
+  const [event, setEvent] = useState<Event | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -71,7 +74,7 @@ export default function EventDetailPage() {
       try {
         const eventData = await eventService.getById(eventId);
         setEvent(eventData);
-        setLikesCount(eventData.likes_count);
+        setLikesCount(eventData.likes_count || 0);
 
         // Fetch like status
         const likeStatus = await eventService.getLikeStatus(eventId, userId);
@@ -119,8 +122,8 @@ export default function EventDetailPage() {
       const botResponses: Record<string, string> = {
         'visibility': `This event will be visible from coordinates ${event?.latitude?.toFixed(2)}, ${event?.longitude?.toFixed(2)}. Check the map below to see if you're in the visibility zone!`,
         'time': `The event starts at ${event?.start_time ? new Date(event.start_time).toLocaleString() : 'N/A'} and ends at ${event?.end_time ? new Date(event.end_time).toLocaleString() : 'N/A'}.`,
-        'what': `${event?.title} is a ${event?.type.replace('_', ' ')} event. ${event?.description?.substring(0, 150)}...`,
-        'default': `Great question about ${event?.title}! This is a ${event?.type.replace('_', ' ')} event. Is there anything specific you'd like to know about visibility, timing, or how to best observe it?`,
+        'what': `${event?.title} is a ${event?.event_type.replace('_', ' ')} event. ${event?.description?.substring(0, 150)}...`,
+        'default': `Great question about ${event?.title}! This is a ${event?.event_type.replace('_', ' ')} event. Is there anything specific you'd like to know about visibility, timing, or how to best observe it?`,
       };
 
       const lowerInput = userMessage.text.toLowerCase();
@@ -162,7 +165,7 @@ export default function EventDetailPage() {
   }
 
   const eventDate = new Date(event.start_time);
-  const endDate = new Date(event.end_time);
+  const endDate = event.end_time ? new Date(event.end_time) : eventDate;
   const formattedDate = eventDate.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -200,8 +203,8 @@ export default function EventDetailPage() {
               <h1 className="text-xl sm:text-2xl font-bold text-white">{event.title}</h1>
               <p className="text-sm text-gray-400">{formattedDate}</p>
             </div>
-            <Badge className={cn('hidden sm:flex', eventTypeColors[event.type] || eventTypeColors.other)}>
-              {event.type.replace('_', ' ')}
+            <Badge className={cn('hidden sm:flex', eventTypeColors[event.event_type] || eventTypeColors.other)}>
+              {event.event_type.replace('_', ' ')}
             </Badge>
           </div>
         </div>
@@ -213,10 +216,10 @@ export default function EventDetailPage() {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Event Image */}
-            {event.image_url && (
+            {event.image && (
               <div className="w-full h-64 sm:h-80 rounded-xl overflow-hidden">
                 <img
-                  src={event.image_url}
+                  src={event.image}
                   alt={event.title}
                   className="w-full h-full object-cover"
                 />

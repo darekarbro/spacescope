@@ -2,18 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { EventCard } from '@/components/events/event-card';
-import { eventService, EventWithLikes } from '@/lib/services/eventService';
+import { eventService } from '@/lib/services/eventService';
+import type { Event } from '@/types/event';
 import { Loader } from '@/components/ui/Loader';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Search, FilterX } from 'lucide-react';
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<EventWithLikes[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<EventWithLikes[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
+  const [userLikes, setUserLikes] = useState<Record<number, boolean>>({});
   const [userId] = useState('user123'); // TODO: Get from auth context
   const [error, setError] = useState<string | null>(null);
 
@@ -23,17 +24,17 @@ export default function EventsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await eventService.getAll(50, 0, {
+        const response = await eventService.getAll(50, 0, {
           status: 'approved',
           sort_by: 'start_time',
         });
-        setEvents(data);
-        setFilteredEvents(data);
+        setEvents(response.results);
+        setFilteredEvents(response.results);
 
         // Fetch like statuses for all events
-        const likeStatuses: Record<string, boolean> = {};
+        const likeStatuses: Record<number, boolean> = {};
         await Promise.all(
-          data.map(async (event) => {
+          response.results.map(async (event) => {
             try {
               const status = await eventService.getLikeStatus(event.id, userId);
               likeStatuses[event.id] = status.has_liked;
@@ -60,12 +61,12 @@ export default function EventsPage() {
     const filtered = events.filter((event) =>
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.type.toLowerCase().includes(searchTerm.toLowerCase())
+      event.event_type.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredEvents(filtered);
   }, [searchTerm, events]);
 
-  const handleLikeToggle = async (eventId: string) => {
+  const handleLikeToggle = async (eventId: number) => {
     try {
       const result = await eventService.toggleLike(eventId, userId);
       
@@ -93,7 +94,7 @@ export default function EventsPage() {
     }
   };
 
-  const isEventLiked = (eventId: string) => userLikes[eventId] || false;
+  const isEventLiked = (eventId: number) => userLikes[eventId] || false;
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-900 via-slate-800 to-slate-900">
@@ -163,7 +164,7 @@ export default function EventsPage() {
                   event={event}
                   isLiked={isEventLiked(event.id)}
                   onLikeToggle={handleLikeToggle}
-                  likesCount={event.likes_count}
+                  likesCount={event.likes_count || 0}
                 />
               ))}
             </div>

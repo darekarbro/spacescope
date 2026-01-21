@@ -1,48 +1,31 @@
 import { EVENTS_ENDPOINTS } from '@/lib/api/endpoints';
-import { Event } from '@/types/event';
-
-export interface EventWithLikes extends Event {
-  likes_count: number;
-}
+import type { Event, CreateEventDTO, UpdateEventDTO, EventType, EventStatus } from '@/types/event';
 
 export interface EventFilters {
-  type?: string;
-  status?: string;
+  event_type?: EventType;
+  status?: EventStatus;
   search?: string;
   tags?: string;
   sort_by?: string;
 }
 
 export interface EventListResponse {
-  success: boolean;
   count: number;
   next: string | null;
   previous: string | null;
-  data: EventWithLikes[];
-}
-
-export interface EventResponse {
-  success: boolean;
-  data: EventWithLikes;
-  message?: string;
+  results: Event[];
 }
 
 export interface LikeResponse {
-  success: boolean;
-  data: {
-    action: 'liked' | 'unliked';
-    likes_count: number;
-    has_liked: boolean;
-  };
+  action: 'liked' | 'unliked';
+  likes_count: number;
+  has_liked: boolean;
 }
 
 export interface LikeStatusResponse {
-  success: boolean;
-  data: {
-    likes_count: number;
-    has_liked: boolean;
-    user_id: string;
-  };
+  likes_count: number;
+  has_liked: boolean;
+  user_id: string;
 }
 
 export const eventService = {
@@ -52,106 +35,122 @@ export const eventService = {
   getAll: async (
     limit = 50,
     offset = 0,
-    filters: EventFilters = {}
-  ): Promise<EventWithLikes[]> => {
+    filters: Record<string, string> = {}
+  ): Promise<EventListResponse> => {
     const params = new URLSearchParams({
       limit: String(limit),
       offset: String(offset),
-      ...filters,
+    });
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value);
     });
 
     const response = await fetch(`${EVENTS_ENDPOINTS.LIST}?${params}`);
-    const result: EventListResponse = await response.json();
-
-    if (!result.success) {
+    
+    if (!response.ok) {
       throw new Error('Failed to fetch events');
     }
+    
+    const result = await response.json();
 
-    return result.data;
+    // Handle both wrapped and unwrapped responses
+    if (result.success !== undefined) {
+      return {
+        count: result.count || result.data?.length || 0,
+        next: result.next || null,
+        previous: result.previous || null,
+        results: result.data || [],
+      };
+    }
+
+    return {
+      count: result.count || result.results?.length || 0,
+      next: result.next || null,
+      previous: result.previous || null,
+      results: result.results || result || [],
+    };
   },
 
   /**
    * Get single event by ID
    */
-  getById: async (id: string): Promise<EventWithLikes> => {
-    const response = await fetch(EVENTS_ENDPOINTS.DETAIL(id));
-    const result: EventResponse = await response.json();
-
-    if (!result.success) {
+  getById: async (id: number | string): Promise<Event> => {
+    const response = await fetch(EVENTS_ENDPOINTS.DETAIL(String(id)));
+    
+    if (!response.ok) {
       throw new Error('Failed to fetch event');
     }
+    
+    const result = await response.json();
 
-    return result.data;
+    // Handle both wrapped and unwrapped responses
+    return result.data || result;
   },
 
   /**
    * Create new event
    */
-  create: async (data: Partial<Event>): Promise<EventWithLikes> => {
+  create: async (data: CreateEventDTO): Promise<Event> => {
     const response = await fetch(EVENTS_ENDPOINTS.CREATE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 
-    const result: EventResponse = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to create event');
     }
-
-    return result.data;
+    
+    const result = await response.json();
+    return result.data || result;
   },
 
   /**
    * Update event (full update)
    */
-  update: async (id: string, data: Partial<Event>): Promise<EventWithLikes> => {
-    const response = await fetch(EVENTS_ENDPOINTS.UPDATE(id), {
+  update: async (id: number | string, data: UpdateEventDTO): Promise<Event> => {
+    const response = await fetch(EVENTS_ENDPOINTS.UPDATE(String(id)), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 
-    const result: EventResponse = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to update event');
     }
-
-    return result.data;
+    
+    const result = await response.json();
+    return result.data || result;
   },
 
   /**
    * Update event (partial update)
    */
-  patch: async (id: string, data: Partial<Event>): Promise<EventWithLikes> => {
-    const response = await fetch(EVENTS_ENDPOINTS.PATCH(id), {
+  patch: async (id: number | string, data: Partial<UpdateEventDTO>): Promise<Event> => {
+    const response = await fetch(EVENTS_ENDPOINTS.PATCH(String(id)), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
 
-    const result: EventResponse = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to update event');
     }
-
-    return result.data;
+    
+    const result = await response.json();
+    return result.data || result;
   },
 
   /**
    * Delete event
    */
-  delete: async (id: string): Promise<void> => {
-    const response = await fetch(EVENTS_ENDPOINTS.DELETE(id), {
+  delete: async (id: number | string): Promise<void> => {
+    const response = await fetch(EVENTS_ENDPOINTS.DELETE(String(id)), {
       method: 'DELETE',
     });
 
-    const result = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to delete event');
     }
   },
@@ -163,61 +162,63 @@ export const eventService = {
     days = 30,
     limit = 20,
     type = ''
-  ): Promise<EventWithLikes[]> => {
+  ): Promise<Event[]> => {
     const params = new URLSearchParams({
       days: String(days),
       limit: String(limit),
     });
 
     if (type) {
-      params.append('type', type);
+      params.append('event_type', type);
     }
 
     const response = await fetch(`${EVENTS_ENDPOINTS.UPCOMING}?${params}`);
-    const result: EventListResponse = await response.json();
-
-    if (!result.success) {
+    
+    if (!response.ok) {
       throw new Error('Failed to fetch upcoming events');
     }
+    
+    const result = await response.json();
 
-    return result.data;
+    // Handle both wrapped and unwrapped responses
+    if (result.data) return result.data;
+    if (result.results) return result.results;
+    return result;
   },
 
   /**
    * Like/Unlike event (toggle)
    */
-  toggleLike: async (eventId: string, userId: string): Promise<LikeResponse['data']> => {
-    const response = await fetch(EVENTS_ENDPOINTS.LIKE(eventId), {
+  toggleLike: async (eventId: number | string, userId: string): Promise<LikeResponse> => {
+    const response = await fetch(EVENTS_ENDPOINTS.LIKE(String(eventId)), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId }),
     });
 
-    const result: LikeResponse = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to toggle like');
     }
-
-    return result.data;
+    
+    const result = await response.json();
+    return result.data || result;
   },
 
   /**
    * Get like status for an event
    */
   getLikeStatus: async (
-    eventId: string,
+    eventId: number | string,
     userId: string
-  ): Promise<LikeStatusResponse['data']> => {
+  ): Promise<LikeStatusResponse> => {
     const params = new URLSearchParams({ user_id: userId });
-    const response = await fetch(`${EVENTS_ENDPOINTS.LIKE(eventId)}?${params}`);
+    const response = await fetch(`${EVENTS_ENDPOINTS.LIKE(String(eventId))}?${params}`);
 
-    const result: LikeStatusResponse = await response.json();
-
-    if (!result.success) {
+    if (!response.ok) {
       throw new Error('Failed to get like status');
     }
-
-    return result.data;
+    
+    const result = await response.json();
+    return result.data || result;
   },
 };
