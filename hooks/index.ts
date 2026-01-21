@@ -6,8 +6,9 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useCallback, useState } from 'react';
+import { useEventLike } from './use-event-like';
 
-export { useAuth };
+export { useAuth, useEventLike };
 
 // Hook for fetching with loading state
 export function useFetch<T>(

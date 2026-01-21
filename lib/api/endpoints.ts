@@ -17,15 +17,18 @@ export const AUTH_ENDPOINTS = {
 
 // Events Endpoints
 export const EVENTS_ENDPOINTS = {
-  LIST: `${API_BASE}/api/events/`,
-  CREATE: `${API_BASE}/api/events/`,
-  DETAIL: (id: string) => `${API_BASE}/api/events/${id}/`,
-  UPDATE: (id: string) => `${API_BASE}/api/events/${id}/`,
-  DELETE: (id: string) => `${API_BASE}/api/events/${id}/`,
-  MY_SUBMISSIONS: `${API_BASE}/api/events/my-submissions/`,
-  PENDING: `${API_BASE}/api/events/pending/`,
-  APPROVE: (id: string) => `${API_BASE}/api/events/${id}/approve/`,
-  REJECT: (id: string) => `${API_BASE}/api/events/${id}/reject/`,
+  LIST: `${API_BASE}/api/v1/events/`,
+  CREATE: `${API_BASE}/api/v1/events/`,
+  DETAIL: (id: string) => `${API_BASE}/api/v1/events/${id}/`,
+  UPDATE: (id: string) => `${API_BASE}/api/v1/events/${id}/`,
+  PATCH: (id: string) => `${API_BASE}/api/v1/events/${id}/`,
+  DELETE: (id: string) => `${API_BASE}/api/v1/events/${id}/`,
+  MY_SUBMISSIONS: `${API_BASE}/api/v1/events/my-submissions/`,
+  PENDING: `${API_BASE}/api/v1/events/pending/`,
+  APPROVE: (id: string) => `${API_BASE}/api/v1/events/${id}/approve/`,
+  REJECT: (id: string) => `${API_BASE}/api/v1/events/${id}/reject/`,
+  UPCOMING: `${API_BASE}/api/v1/events/upcoming/`,
+  LIKE: (id: string) => `${API_BASE}/api/v1/events/${id}/like/`,
 };
 
 // Cosmic Weather Endpoints

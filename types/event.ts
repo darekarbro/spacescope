@@ -1,42 +1,73 @@
-export type EventType = 'meteor_shower' | 'planetary_alignment' | 'iss_pass' | 'aurora' | 'lunar_eclipse' | 'solar_eclipse' | 'comet' | 'other';
+export type EventType = 
+  | 'solar_eclipse' 
+  | 'lunar_eclipse' 
+  | 'meteor_shower' 
+  | 'aurora' 
+  | 'iss_pass' 
+  | 'comet' 
+  | 'conjunction' 
+  | 'transit'
+  | 'planetary_alignment'
+  | 'other';
 
-export type EventStatus = 'pending' | 'approved' | 'rejected';
+export type EventStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'completed';
+
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+}
 
 export interface Event {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  type: EventType;
+  event_type: EventType;
   start_time: string; // ISO 8601
-  end_time: string;
+  end_time?: string;
   latitude?: number;
   longitude?: number;
   visibility_map_url?: string;
   magnitude?: number;
-  created_by: string; // scientist ID
+  submitted_by?: User;
   status: EventStatus;
   created_at: string;
   updated_at: string;
-  image_url?: string;
+  image?: string;
   tags?: string[];
+  likes_count?: number;
+  user_has_liked?: boolean;
 }
 
 export interface EventFilters {
-  type?: EventType;
+  event_type?: EventType;
   start_date?: string;
   end_date?: string;
   visibility_region?: 'global' | 'northern' | 'southern' | 'equatorial';
+  status?: EventStatus;
+  search?: string;
 }
 
 export interface CreateEventDTO {
   title: string;
   description: string;
-  type: EventType;
+  event_type: EventType;
   start_time: string;
-  end_time: string;
+  end_time?: string;
   latitude?: number;
   longitude?: number;
   magnitude?: number;
-  image_url?: string;
+  image?: string;
   tags?: string[];
+}
+
+export interface UpdateEventDTO extends Partial<CreateEventDTO> {
+  status?: EventStatus;
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
