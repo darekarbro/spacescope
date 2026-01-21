@@ -215,26 +215,26 @@ export function EventsSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Upcoming Events List */}
+        {/* Featured Events */}
         <SidebarGroup className="p-0 mt-4">
           <SidebarGroupLabel className="px-0 h-6">
             <span className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-              Upcoming Events
+              Featured Events
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {events.filter(e => e.isUpcoming).map((event) => {
+              {events.filter(e => e.isSaved).slice(0, 2).map((event) => {
                 const Icon = event.icon;
                 return (
                   <SidebarMenuItem key={event.id}>
                     <SidebarMenuButton className="h-10 flex items-center gap-2">
-                      <Icon className="size-4" style={{ color: "#4f8cff" }} />
+                      <Icon className="size-4" style={{ color: "#f59e0b" }} />
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-medium">{event.name}</span>
-                        <span className="text-xs text-muted-foreground">{event.date} · {event.visibility}</span>
+                        <span className="text-xs text-muted-foreground">{event.date}</span>
                       </div>
-                      {/* Quick actions: Save, Remind, Details (icons can be added here) */}
+                      <SidebarMenuBadge className="ml-auto bg-amber-500/20 text-amber-600 text-xs">★</SidebarMenuBadge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

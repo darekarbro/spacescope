@@ -5,6 +5,9 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useTheme } from "next-themes";
 import { useMapsStore } from "@/stores/maps-store";
+import { useEventSelection } from "@/stores/event-selection-store";
+import { createVisibilityGeoJSON, getVisibilityBounds } from "@/lib/visibilityGeoJSON";
+import { viewingLocations, getRecommendedLocations } from "@/mock/viewingLocations";
 import { categories, tags as allTags } from "@/mock/locations";
 
 const MAP_STYLES = {
@@ -19,12 +22,14 @@ export function MapView() {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const mapRef = React.useRef<maplibregl.Map | null>(null);
   const markersRef = React.useRef<Map<string, maplibregl.Marker>>(new Map());
+  const viewingLocationMarkersRef = React.useRef<Map<string, maplibregl.Marker>>(new Map());
   const userMarkerRef = React.useRef<maplibregl.Marker | null>(null);
   const popupRef = React.useRef<maplibregl.Popup | null>(null);
   const isAnimatingRef = React.useRef(false);
   const closeTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const isHoveringPopupRef = React.useRef(false);
   const { resolvedTheme } = useTheme();
+  const { selectedEvent } = useEventSelection();
 
   const {
     mapCenter,
@@ -155,6 +160,89 @@ export function MapView() {
     mapRef.current.setStyle(getMapStyleUrl());
   }, [mapStyle, resolvedTheme, getMapStyleUrl]);
 
+  // Handle visibility layer for selected events
+  React.useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedEvent) {
+      // Remove visibility layer if no event is selected
+      if (map && map.getLayer("visibility-fill")) {
+        map.removeLayer("visibility-fill");
+      }
+      if (map && map.getLayer("visibility-border")) {
+        map.removeLayer("visibility-border");
+      }
+      if (map && map.getSource("visibility-source")) {
+        map.removeSource("visibility-source");
+      }
+      return;
+    }
+
+    // Wait for map to be ready
+    const handleStyleLoad = () => {
+      if (!map || !selectedEvent) return;
+
+      const geoJSON = createVisibilityGeoJSON(selectedEvent.visibilityRegion);
+      const bounds = getVisibilityBounds(selectedEvent.visibilityRegion);
+
+      // Add or update source
+      if (map.getSource("visibility-source")) {
+        (map.getSource("visibility-source") as maplibregl.GeoJSONSource).setData(geoJSON);
+      } else {
+        map.addSource("visibility-source", {
+          type: "geojson",
+          data: geoJSON,
+        });
+      }
+
+      // Add fill layer if it doesn't exist
+      if (!map.getLayer("visibility-fill")) {
+        map.addLayer({
+          id: "visibility-fill",
+          type: "fill",
+          source: "visibility-source",
+          paint: {
+            "fill-color": "#3b82f6",
+            "fill-opacity": 0.15,
+          },
+        });
+      }
+
+      // Add border layer if it doesn't exist
+      if (!map.getLayer("visibility-border")) {
+        map.addLayer({
+          id: "visibility-border",
+          type: "line",
+          source: "visibility-source",
+          paint: {
+            "line-color": "#3b82f6",
+            "line-width": 2,
+            "line-opacity": 0.6,
+          },
+        });
+      }
+
+      // Zoom to fit the visibility region
+      isAnimatingRef.current = true;
+      map.fitBounds(
+        [
+          [bounds[0], bounds[1]], // southwest corner
+          [bounds[2], bounds[3]], // northeast corner
+        ],
+        {
+          padding: 40,
+          duration: 1000,
+          maxZoom: 14,
+        }
+      );
+    };
+
+    if (map.isStyleLoaded()) {
+      handleStyleLoad();
+    } else {
+      map.once("style.load", handleStyleLoad);
+    }
+  }, [selectedEvent]);
+
   React.useEffect(() => {
     if (!mapRef.current || !userLocation) return;
 
@@ -185,158 +273,80 @@ export function MapView() {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current.clear();
 
-    locations.forEach((location: any) => {
-      const category = categories.find((c: any) => c.id === location.categoryId);
-      const color = category?.color || "#6b7280";
-      const isSelected = selectedLocationId === location.id;
-      const isRouteDestination = routeDestinationId === location.id;
+    // Tourism location markers are hidden - viewing locations are shown instead
+  }, []);
 
+  // Handle viewing location markers - always shown, filtered by selected event
+  React.useEffect(() => {
+    if (!mapRef.current) return;
+
+    viewingLocationMarkersRef.current.forEach((marker) => marker.remove());
+    viewingLocationMarkersRef.current.clear();
+
+    // Get viewing locations - all if no event selected, filtered if event selected
+    let locationsToShow = [];
+    if (selectedEvent) {
+      locationsToShow = getRecommendedLocations(selectedEvent.visibilityRegion);
+    } else {
+      // If no event selected, show all viewing locations
+      locationsToShow = viewingLocations;
+    }
+
+    locationsToShow.forEach((location) => {
       const el = document.createElement("div");
-      el.className = "marker-container";
+      el.className = "observatory-marker";
       el.innerHTML = `
-        <div class="relative cursor-pointer transition-transform ${
-          isSelected || isRouteDestination ? "scale-125" : "hover:scale-110"
-        }">
-          <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16 0C7.164 0 0 7.164 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.164 24.836 0 16 0Z" fill="${
-              isRouteDestination ? "#22c55e" : isSelected ? "#3b82f6" : color
-            }"/>
-            <circle cx="16" cy="14" r="6" fill="white"/>
+        <div class="relative cursor-pointer transition-transform hover:scale-125">
+          <svg width="36" height="44" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Telescope/Observatory marker -->
+            <defs>
+              <linearGradient id="telescopeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path d="M18 0C8.058 0 0 8.058 0 18C0 32 18 44 18 44C18 44 36 32 36 18C36 8.058 27.942 0 18 0Z" fill="url(#telescopeGrad)"/>
+            <circle cx="18" cy="16" r="5" fill="white"/>
+            <path d="M14 20L22 20L20 26L16 26Z" fill="white" opacity="0.8"/>
           </svg>
-          ${
-            isSelected
-              ? '<div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-primary/30 animate-ping"></div>'
-              : ""
-          }
-          ${
-            isRouteDestination
-              ? '<div class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center shadow-md"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>'
-              : ""
-          }
+          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-amber-400/60 animate-pulse"></div>
         </div>
       `;
 
-      el.addEventListener("click", () => {
-        selectLocation(location.id);
+      const popup = new maplibregl.Popup({
+        offset: 25,
+        closeButton: false,
+        closeOnClick: false,
       });
 
-      el.addEventListener("mouseenter", () => {
-        if (closeTimeoutRef.current) {
-          clearTimeout(closeTimeoutRef.current);
-        }
-
-        if (popupRef.current) {
-          popupRef.current.remove();
-        }
-
-        const stars =
-          "★".repeat(Math.floor(location.rating)) +
-          "☆".repeat(5 - Math.floor(location.rating));
-
-        const tagsHtml = location.tags
-          .slice(0, 4)
-          .map((tag: any) => `<span class="popup-tag">${getTagName(tag)}</span>`)
-          .join("");
-
-        const popupContent = `
-          <div class="location-popup" data-popup-hover="true">
-            <div class="popup-header">
-              <div class="popup-icon" style="background-color: ${color}20;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <div class="popup-title-section">
-                <h3 class="popup-title">${location.name}</h3>
-                <p class="popup-category">${category?.name || "Location"}</p>
-              </div>
-            </div>
-            
-            <p class="popup-description">${location.description}</p>
-            
-            <p class="popup-address">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              ${location.address}
-            </p>
-            
-            ${tagsHtml ? `<div class="popup-tags">${tagsHtml}</div>` : ""}
-            
-            <div class="popup-stats">
-              <div class="popup-stat">
-                <span class="popup-rating">
-                  <span class="stars">${stars}</span>
-                  <span class="rating-value">${location.rating}</span>
-                </span>
-              </div>
-              <div class="popup-stat">
-                <svg class="popup-stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <span class="popup-stat-value">${location.visitCount}</span>
-                <span class="popup-stat-label">visits</span>
-              </div>
-            </div>
-            
-            <div class="popup-footer">
-              ${
-                location.isFavorite
-                  ? '<span class="popup-favorite">❤️ Favorite</span>'
-                  : "<span></span>"
-              }
-              <span class="popup-date">Added ${formatDate(location.createdAt)}</span>
-            </div>
+      popup.setHTML(`
+        <div style="padding: 8px; font-size: 12px; max-width: 200px;">
+          <div style="font-weight: bold; color: #1f2937; margin-bottom: 4px;">${location.name}</div>
+          <div style="color: #6b7280; font-size: 11px; margin-bottom: 4px;">
+            <svg style="display: inline; width: 12px; height: 12px; margin-right: 2px;" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+            </svg>
+            ${location.type.replace('-', ' ')} • ${location.elevation}m
           </div>
-        `;
+          <div style="color: #4b5563; font-size: 11px; line-height: 1.4;">${location.description}</div>
+        </div>
+      `);
 
-        const popup = new maplibregl.Popup({
-          offset: [0, -35],
-          closeButton: false,
-          closeOnClick: false,
-          className: "location-hover-popup",
-          maxWidth: "380px",
-        })
-          .setLngLat([location.coordinates.lng, location.coordinates.lat])
-          .setHTML(popupContent)
-          .addTo(mapRef.current!);
-
-        const popupElement = popup.getElement();
-        if (popupElement) {
-          popupElement.addEventListener("mouseenter", () => {
-            isHoveringPopupRef.current = true;
-            if (closeTimeoutRef.current) {
-              clearTimeout(closeTimeoutRef.current);
-            }
-          });
-          popupElement.addEventListener("mouseleave", () => {
-            isHoveringPopupRef.current = false;
-            closePopup();
-          });
-          popupElement.addEventListener("click", () => {
-            selectLocation(location.id);
-            popup.remove();
-            popupRef.current = null;
-          });
-        }
-
-        popupRef.current = popup;
+      el.addEventListener("mouseenter", () => {
+        popup.setLngLat([location.coordinates.lng, location.coordinates.lat]).addTo(mapRef.current!);
       });
 
       el.addEventListener("mouseleave", () => {
-        closePopup();
+        popup.remove();
       });
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([location.coordinates.lng, location.coordinates.lat])
-        .addTo(mapRef.current!);
+        .addTo(mapRef.current);
 
-      markersRef.current.set(location.id, marker);
+      viewingLocationMarkersRef.current.set(location.id, marker);
     });
-  }, [locations, selectedLocationId, selectLocation, closePopup, routeDestinationId]);
+  }, [selectedEvent]);
 
   const routeDataRef = React.useRef<{
     coordinates: [number, number][];

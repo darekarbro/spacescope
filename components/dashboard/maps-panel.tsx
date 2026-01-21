@@ -30,6 +30,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useSavedEvents } from "@/hooks/useSavedEvents";
+import { useEventSelection } from "@/stores/event-selection-store";
 
 type PanelMode = "all" | "favorites" | "recents";
 
@@ -114,6 +115,7 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
   // Read mode from URL search params, fallback to prop
   const searchParams = useSearchParams();
   const { savedEventIds, toggleSaved, isSaved, isMounted: savedEventsReady } = useSavedEvents();
+  const { selectEvent } = useEventSelection();
 
   React.useEffect(() => {
     setIsMounted(true);
@@ -266,7 +268,15 @@ export function MapsPanel({ mode = "all" }: MapsPanelProps) {
                       ? "border-primary/60 bg-linear-to-br from-primary/8 via-primary/4 to-transparent shadow-sm"
                       : "border-secondary/60 bg-linear-to-br from-secondary/20 via-background to-background hover:from-secondary/30"
                   )}
-                  onClick={() => setSelectedEventId(isSelected ? null : event.id)}
+                  onClick={() => {
+                    const newSelected = isSelected ? null : event.id;
+                    setSelectedEventId(newSelected);
+                    if (newSelected) {
+                      selectEvent(event);
+                    } else {
+                      selectEvent(null);
+                    }
+                  }}
                 >
                   {/* Header with icon and title */}
                   <div className="flex items-start gap-3">
