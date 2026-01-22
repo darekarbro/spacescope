@@ -34,10 +34,11 @@ export default function ExplorePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await eventService.getAll(100, 0, {
+        const response = await eventService.getAll(100, 0, {
           status: 'approved',
           sort_by: 'start_time',
         });
+        const data = response.results || [];
         setEvents(data);
         setFilteredEvents(data);
 

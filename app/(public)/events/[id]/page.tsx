@@ -204,7 +204,7 @@ export default function EventDetailPage() {
               <p className="text-sm text-gray-400">{formattedDate}</p>
             </div>
             <Badge className={cn('hidden sm:flex', eventTypeColors[event.event_type] || eventTypeColors.other)}>
-              {event.event_type.replace('_', ' ')}
+              {(event.event_type || 'other').replace('_', ' ')}
             </Badge>
           </div>
         </div>

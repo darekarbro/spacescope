@@ -81,7 +81,7 @@ export function EventCard({
           <Badge
             className={cn('whitespace-nowrap', eventTypeColors[event.event_type] || eventTypeColors.other)}
           >
-            {event.event_type.replace('_', ' ')}
+            {(event.event_type || 'other').replace('_', ' ')}
           </Badge>
         </div>
       </CardHeader>
