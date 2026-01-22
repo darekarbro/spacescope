@@ -1,32 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Event } from '@/types/event';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Heart } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Event } from "@/types/event";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Heart } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EventCardProps {
-  event: Event;
+  event: Event | any;
   isLiked: boolean;
-  onLikeToggle: (eventId: number) => void;
+  onLikeToggle: (eventId: string | number) => void;
   likesCount: number;
 }
 
 const eventTypeColors: Record<string, string> = {
-  meteor_shower: 'bg-yellow-100 text-yellow-800',
-  planetary_alignment: 'bg-purple-100 text-purple-800',
-  iss_pass: 'bg-blue-100 text-blue-800',
-  aurora: 'bg-green-100 text-green-800',
-  lunar_eclipse: 'bg-orange-100 text-orange-800',
-  solar_eclipse: 'bg-red-100 text-red-800',
-  comet: 'bg-indigo-100 text-indigo-800',
-  conjunction: 'bg-pink-100 text-pink-800',
-  transit: 'bg-teal-100 text-teal-800',
-  other: 'bg-gray-100 text-gray-800',
+  meteor_shower: "bg-yellow-100 text-yellow-800",
+  planetary_alignment: "bg-purple-100 text-purple-800",
+  iss_pass: "bg-blue-100 text-blue-800",
+  aurora: "bg-green-100 text-green-800",
+  lunar_eclipse: "bg-orange-100 text-orange-800",
+  solar_eclipse: "bg-red-100 text-red-800",
+  comet: "bg-indigo-100 text-indigo-800",
+  conjunction: "bg-pink-100 text-pink-800",
+  transit: "bg-teal-100 text-teal-800",
+  other: "bg-gray-100 text-gray-800",
 };
 
 export function EventCard({
@@ -38,15 +44,15 @@ export function EventCard({
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
 
-  const eventDate = new Date(event.start_time);
-  const formattedDate = eventDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  const eventDate = new Date(event.start_time || event.start || Date.now());
+  const formattedDate = eventDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
-  const formattedTime = eventDate.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
+  const formattedTime = eventDate.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   const handleLikeClick = (e: React.MouseEvent) => {
@@ -61,8 +67,8 @@ export function EventCard({
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-all duration-300 hover:shadow-lg',
-        isHovered && 'shadow-lg scale-105'
+        "cursor-pointer transition-all duration-300 hover:shadow-lg",
+        isHovered && "shadow-lg scale-105",
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -79,9 +85,16 @@ export function EventCard({
             </CardDescription>
           </div>
           <Badge
-            className={cn('whitespace-nowrap', eventTypeColors[event.event_type] || eventTypeColors.other)}
+            className={cn(
+              "whitespace-nowrap",
+              eventTypeColors[
+                (event.event_type ?? event.type ?? event.categoryId) as string
+              ] || eventTypeColors.other,
+            )}
           >
-            {event.event_type.replace('_', ' ')}
+            {String(event.event_type ?? event.type ?? event.categoryId ?? "")
+              .replace(/_/g, " ")
+              .trim() || "Other"}
           </Badge>
         </div>
       </CardHeader>
@@ -117,8 +130,8 @@ export function EventCard({
             <Heart
               size={18}
               className={cn(
-                'transition-colors',
-                isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                "transition-colors",
+                isLiked ? "fill-red-500 text-red-500" : "text-gray-400",
               )}
             />
             <span className="text-sm">{likesCount}</span>
