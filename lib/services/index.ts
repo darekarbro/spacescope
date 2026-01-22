@@ -62,10 +62,41 @@ export const eventService = {
   },
 };
 
-// Cosmic Weather Service
+// Cosmic Weather Service (client-side)
 export const weatherService = {
+  /** Get full cosmic weather data */
+  async getFullWeather() {
+    return api.get<CosmicWeatherData>(WEATHER_ENDPOINTS.FULL);
+  },
+
+  /** Get weather summary */
+  async getSummary() {
+    return api.get(WEATHER_ENDPOINTS.SUMMARY);
+  },
+
+  /** Get all weather indicators */
+  async getIndicators() {
+    return api.get(WEATHER_ENDPOINTS.INDICATORS);
+  },
+
+  /** Get solar activity data */
+  async getSolarActivity() {
+    return api.get(WEATHER_ENDPOINTS.SOLAR);
+  },
+
+  /** Get aurora data */
+  async getAurora() {
+    return api.get(WEATHER_ENDPOINTS.AURORA);
+  },
+
+  /** Force refresh from NOAA (admin action) */
+  async refreshData() {
+    return api.post(WEATHER_ENDPOINTS.REFRESH);
+  },
+
+  // Legacy methods for backward compatibility
   async getCurrentWeather() {
-    return api.get<CosmicWeatherData>(WEATHER_ENDPOINTS.CURRENT);
+    return api.get<CosmicWeatherData>(WEATHER_ENDPOINTS.FULL);
   },
 
   async getWeatherForecast(days: number = 7) {

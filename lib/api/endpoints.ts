@@ -4,7 +4,7 @@
  * Update this file when backend APIs change
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {
@@ -33,6 +33,19 @@ export const EVENTS_ENDPOINTS = {
 
 // Cosmic Weather Endpoints
 export const WEATHER_ENDPOINTS = {
+  /** Full weather data */
+  FULL: `${API_BASE}/api/v1/cosmic-weather/`,
+  /** Simple summary */
+  SUMMARY: `${API_BASE}/api/v1/cosmic-weather/summary/`,
+  /** List of all indicators */
+  INDICATORS: `${API_BASE}/api/v1/cosmic-weather/indicators/`,
+  /** Force refresh from NOAA */
+  REFRESH: `${API_BASE}/api/v1/cosmic-weather/refresh/`,
+  /** Solar activity only */
+  SOLAR: `${API_BASE}/api/v1/cosmic-weather/solar/`,
+  /** Aurora chance only */
+  AURORA: `${API_BASE}/api/v1/cosmic-weather/aurora/`,
+  // Legacy endpoints (kept for backward compatibility)
   CURRENT: `${API_BASE}/api/cosmic-weather/current/`,
   FORECAST: `${API_BASE}/api/cosmic-weather/forecast/`,
   AURORA_FORECAST: `${API_BASE}/api/cosmic-weather/aurora/`,
