@@ -2,10 +2,18 @@
 
 import type { Metadata } from 'next';
 import React from 'react';
+import { Orbitron } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 
 import RootLayoutClient from '@/components/layout/RootLayoutClient';
+
+// Load Orbitron font for Solar System Explorer
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  variable: '--font-orbitron',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'SpaceScope - Explore, Learn & Stay Connected with the Universe',
@@ -18,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={orbitron.variable}>
       <body suppressHydrationWarning className="bg-background">
         <AuthProvider>
           {/* Client boundary for conditional nav/footer */}
