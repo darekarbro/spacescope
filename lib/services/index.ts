@@ -3,19 +3,29 @@
  * Abstracts API responses from components
  */
 
-import { api } from '@/lib/api/client';
-import { EVENTS_ENDPOINTS, WEATHER_ENDPOINTS, MISSIONS_ENDPOINTS } from '@/lib/api/endpoints';
-import { Event, CreateEventDTO, EventFilters, Mission, CosmicWeatherData } from '@/types';
+import { api } from "@/lib/api/client";
+import {
+  EVENTS_ENDPOINTS,
+  WEATHER_ENDPOINTS,
+  MISSIONS_ENDPOINTS,
+} from "@/lib/api/endpoints";
+import {
+  Event,
+  CreateEventDTO,
+  EventFilters,
+  Mission,
+  CosmicWeatherData,
+} from "@/types";
 
 // Events Service
 export const eventService = {
   async getUpcomingEvents(filters?: EventFilters) {
     const params = new URLSearchParams();
-    if (filters?.type) params.append('type', filters.type);
-    if (filters?.start_date) params.append('start_date', filters.start_date);
-    if (filters?.end_date) params.append('end_date', filters.end_date);
-    
-    const url = `${EVENTS_ENDPOINTS.LIST}${params.toString() ? '?' + params : ''}`;
+    if (filters?.event_type) params.append("event_type", filters.event_type);
+    if (filters?.start_date) params.append("start_date", filters.start_date);
+    if (filters?.end_date) params.append("end_date", filters.end_date);
+
+    const url = `${EVENTS_ENDPOINTS.LIST}${params.toString() ? "?" + params : ""}`;
     return api.get<Event[]>(url);
   },
 
@@ -90,12 +100,14 @@ export const weatherService = {
   },
 
   async getWeatherForecast(days: number = 7) {
-    return api.get<CosmicWeatherData>(`${WEATHER_ENDPOINTS.FORECAST}?days=${days}`);
+    return api.get<CosmicWeatherData>(
+      `${WEATHER_ENDPOINTS.FORECAST}?days=${days}`,
+    );
   },
 
   async getAuroraForecast(latitude: number, longitude: number) {
     return api.get(
-      `${WEATHER_ENDPOINTS.AURORA_FORECAST}?lat=${latitude}&lon=${longitude}`
+      `${WEATHER_ENDPOINTS.AURORA_FORECAST}?lat=${latitude}&lon=${longitude}`,
     );
   },
 
