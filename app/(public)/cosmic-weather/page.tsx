@@ -45,29 +45,16 @@ async function getCosmicWeather(): Promise<{ data: CosmicWeatherData | null; err
 }
 
 // Get status color based on level
-function getStatusColor(level: WeatherLevel): string {
+function getStatusColor(level: WeatherLevel) {
   switch (level) {
     case 'green':
-      return 'bg-green-500/20 dark:bg-green-500/30 text-green-700 dark:text-green-300 border-green-500/50';
+      return { dot: 'bg-green-400', label: 'text-green-300' };
     case 'yellow':
-      return 'bg-yellow-500/20 dark:bg-yellow-500/30 text-yellow-700 dark:text-yellow-300 border-yellow-500/50';
+      return { dot: 'bg-amber-300', label: 'text-amber-300' };
     case 'red':
-      return 'bg-red-500/20 dark:bg-red-500/30 text-red-700 dark:text-red-300 border-red-500/50';
+      return { dot: 'bg-red-400', label: 'text-red-300' };
     default:
-      return 'bg-gray-500/20 dark:bg-gray-500/30 text-gray-700 dark:text-gray-300 border-gray-500/50';
-  }
-}
-
-function getBorderColor(level: WeatherLevel): string {
-  switch (level) {
-    case 'green':
-      return 'border-l-green-500';
-    case 'yellow':
-      return 'border-l-yellow-500';
-    case 'red':
-      return 'border-l-red-500';
-    default:
-      return 'border-l-gray-500';
+      return { dot: 'bg-slate-500', label: 'text-slate-300' };
   }
 }
 
@@ -91,30 +78,23 @@ function getTimeAgo(dateString: string): string {
 export default async function CosmicWeatherPage() {
   const { data, error } = await getCosmicWeather();
 
-  // Error state
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 py-12 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-white mb-4">
-              🌩️ Cosmic Weather Dashboard
-            </h1>
+      <div className="min-h-screen bg-gradient-to-b from-slate-100 to-white py-12 px-4">
+        <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-[0_25px_70px_-40px_rgba(15,23,42,0.15)]">
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Cosmic Weather</p>
+            <h1 className="mt-3 text-4xl font-semibold text-slate-900">🌩️ Cosmic Weather Dashboard</h1>
           </div>
-          
-          <div className="bg-red-500/20 border-2 border-red-500/50 rounded-xl p-8 text-center">
-            <span className="text-6xl mb-4 block">⚠️</span>
-            <h2 className="text-2xl font-bold text-red-400 mb-2">Unable to Load Weather Data</h2>
-            <p className="text-gray-300 mb-4">{error || 'Connection failed'}</p>
-            <div className="bg-gray-800/50 rounded-lg p-4 text-left max-w-md mx-auto">
-              <p className="text-sm text-gray-400 mb-2">Make sure:</p>
-              <ul className="text-sm text-gray-300 list-disc list-inside space-y-1">
-                <li>Django server is running on <code className="bg-gray-700 px-1 rounded">localhost:8000</code></li>
-                <li>CORS is enabled for <code className="bg-gray-700 px-1 rounded">localhost:3000</code></li>
-                <li>API endpoint is accessible</li>
-              </ul>
+          <div className="space-y-3 text-center">
+            <p className="text-lg text-slate-600">
+              Data unavailable right now. We will retry automatically when the endpoint responds.
+            </p>
+            <div className="rounded-2xl border border-red-500/40 bg-red-50 p-5">
+              <p className="text-sm font-semibold uppercase tracking-widest text-red-600">Offline</p>
+              <p className="mt-2 text-sm text-slate-600">{error || 'Connection failed'}</p>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
               API URL: {WEATHER_ENDPOINTS.FULL}
             </p>
           </div>
@@ -123,167 +103,146 @@ export default async function CosmicWeatherPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            🌩️ Cosmic Weather Dashboard
-          </h1>
-          <p className="text-xl text-gray-300">
-            Real-time space weather from {data.data_source}
-          </p>
-        </div>
+  const kpiStatus = getStatusColor(data.solar_activity.level);
 
-        {/* Kp Index Banner */}
-        <div className={`mb-8 p-6 rounded-xl border-2 ${getStatusColor(data.solar_activity.level)}`}>
-          <div className="flex items-center justify-between">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10">
+        <header className="text-center space-y-3">
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Live Space Weather</p>
+          <h1 className="text-5xl font-semibold text-slate-900">🌩️ Cosmic Weather Dashboard</h1>
+          <p className="text-lg text-slate-600">
+            Real-time space weather readings from {data.data_source}
+          </p>
+        </header>
+
+        <section className="mx-auto w-full max-w-5xl rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.25)]">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-1">
-                {data.solar_activity.emoji} Kp Index: {data.kp_index}
-              </h2>
-              <p className="text-gray-300">{data.solar_activity.description || 'Current solar activity conditions'}</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Kp Index</p>
+              <div className="mt-2 flex items-center gap-4">
+                <span className="text-5xl font-semibold text-slate-900">{data.kp_index}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex h-3 w-3 rounded-full ${kpiStatus.dot}`}></span>
+                  <span className={`text-sm font-semibold uppercase tracking-[0.4em] ${kpiStatus.label}`}>{data.solar_activity.status}</span>
+                </div>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-slate-500">
+                {data.solar_activity.description || 'Current solar activity conditions based on the latest readings.'}
+              </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-400">Last Updated</p>
-              <p className="text-lg font-semibold">{data.last_updated ? getTimeAgo(data.last_updated) : 'Just now'}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Last updated</p>
+              <p className="mt-1 text-lg font-semibold text-slate-900">
+                {data.last_updated ? getTimeAgo(data.last_updated) : 'Just now'}
+              </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Indicator Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Solar Activity */}
-          <div className={`p-6 rounded-xl border-l-4 ${getBorderColor(data.solar_activity.level)} ${getStatusColor(data.solar_activity.level)} backdrop-blur-sm`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold mb-1">☀️ Solar Activity</h3>
-                <p className="text-sm opacity-80">Sun&apos;s current activity level</p>
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {[
+            {
+              title: '☀️ Solar Activity',
+              description: "Sun's current activity",
+              statusValue: data.solar_activity.status,
+              metricLabel: 'Kp Index',
+              metricValue: data.solar_activity.value,
+              detail: data.solar_activity.description,
+              emoji: data.solar_activity.emoji,
+              tone: getStatusColor(data.solar_activity.level),
+            },
+            {
+              title: '🌌 Aurora Chance',
+              description: 'Northern Lights visibility',
+              statusValue: data.aurora_chance.status,
+              metricLabel: 'Visible',
+              metricValue: data.aurora_chance.visible ? 'Yes' : 'No',
+              detail: data.aurora_chance.description,
+              emoji: data.aurora_chance.emoji,
+              tone: getStatusColor(data.aurora_chance.level),
+            },
+            {
+              title: '☢️ Radiation Level',
+              description: 'Solar radiation intensity',
+              statusValue: data.radiation.status,
+              metricLabel: 'Current',
+              metricValue: data.radiation.value,
+              detail: data.radiation.description,
+              emoji: data.radiation.emoji,
+              tone: getStatusColor(data.radiation.level),
+            },
+            {
+              title: '📡 GPS & Geomagnetic',
+              description: 'Impact on GPS signals',
+              statusValue: data.gps_impact.status,
+              metricLabel: 'Status',
+              metricValue: data.gps_impact.status,
+              detail: data.gps_impact.description,
+              emoji: data.gps_impact.emoji,
+              tone: getStatusColor(data.gps_impact.level),
+            },
+          ].map((card) => (
+            <article
+              key={card.title}
+              className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_25px_60px_-45px_rgba(15,23,42,0.15)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_35px_80px_-50px_rgba(15,23,42,0.18)]"
+            >
+              <header className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{card.description}</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-slate-900">{card.title}</h3>
+                </div>
+                <span className="text-4xl">{card.emoji}</span>
+              </header>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">{card.metricLabel}</span>
+                  <span className="text-lg font-semibold text-slate-900">{card.metricValue}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="inline-flex items-center gap-2">
+                    <span className={`inline-flex h-3 w-3 rounded-full ${card.tone.dot}`}></span>
+                    <span className={`text-sm font-semibold uppercase tracking-[0.3em] ${card.tone.label}`}>{card.statusValue}</span>
+                  </div>
+                  <span className="text-xs text-slate-400">Updated just now</span>
+                </div>
+                {card.detail && <p className="text-sm text-slate-500">{card.detail}</p>}
               </div>
-              <span className="text-4xl">{data.solar_activity.emoji}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Status:</span>
-                <span className="font-semibold">{data.solar_activity.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Kp Index:</span>
-                <span className="font-semibold">{data.solar_activity.value}</span>
-              </div>
-              {data.solar_activity.description && (
-                <p className="text-sm opacity-80 mt-3">{data.solar_activity.description}</p>
-              )}
-            </div>
-          </div>
+            </article>
+          ))}
+        </section>
 
-          {/* Aurora Chance */}
-          <div className={`p-6 rounded-xl border-l-4 ${getBorderColor(data.aurora_chance.level)} ${getStatusColor(data.aurora_chance.level)} backdrop-blur-sm`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold mb-1">🌌 Aurora Chance</h3>
-                <p className="text-sm opacity-80">Northern Lights visibility</p>
-              </div>
-              <span className="text-4xl">{data.aurora_chance.emoji}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Visible:</span>
-                <span className="font-semibold">{data.aurora_chance.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Kp Index:</span>
-                <span className="font-semibold">{data.kp_index}</span>
-              </div>
-              {data.aurora_chance.description && (
-                <p className="text-sm opacity-80 mt-3">{data.aurora_chance.description}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Radiation Level */}
-          <div className={`p-6 rounded-xl border-l-4 ${getBorderColor(data.radiation.level)} ${getStatusColor(data.radiation.level)} backdrop-blur-sm`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold mb-1">☢️ Radiation Level</h3>
-                <p className="text-sm opacity-80">Solar radiation intensity</p>
-              </div>
-              <span className="text-4xl">{data.radiation.emoji}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Status:</span>
-                <span className="font-semibold">{data.radiation.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Level:</span>
-                <span className="font-semibold">{data.radiation.value}</span>
-              </div>
-              {data.radiation.description && (
-                <p className="text-sm opacity-80 mt-3">{data.radiation.description}</p>
-              )}
-            </div>
-          </div>
-
-          {/* GPS Impact */}
-          <div className={`p-6 rounded-xl border-l-4 ${getBorderColor(data.gps_impact.level)} ${getStatusColor(data.gps_impact.level)} backdrop-blur-sm`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold mb-1">📡 GPS & Geomagnetic</h3>
-                <p className="text-sm opacity-80">Impact on GPS signals</p>
-              </div>
-              <span className="text-4xl">{data.gps_impact.emoji}</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Status:</span>
-                <span className="font-semibold">{data.gps_impact.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm opacity-70">Kp Index:</span>
-                <span className="font-semibold">{data.kp_index}</span>
-              </div>
-              {data.gps_impact.description && (
-                <p className="text-sm opacity-80 mt-3">{data.gps_impact.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="p-6 bg-gray-800/50 rounded-xl border border-gray-700 backdrop-blur-sm">
-          <h3 className="text-xl font-bold text-white mb-4">📊 Status Legend</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <section className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-[0_20px_40px_-35px_rgba(15,23,42,0.2)]">
+          <h3 className="text-xl font-bold text-slate-900 mb-4">📊 Status Legend</h3>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🟢</span>
               <div>
                 <p className="font-semibold text-green-400">Low / Safe / Normal</p>
-                <p className="text-sm text-gray-400">Quiet conditions</p>
+                <p className="text-sm text-slate-500">Quiet conditions</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🟡</span>
               <div>
-                <p className="font-semibold text-yellow-400">Medium</p>
-                <p className="text-sm text-gray-400">Watch conditions</p>
+                <p className="font-semibold text-amber-300">Medium</p>
+                <p className="text-sm text-slate-500">Watch conditions</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🔴</span>
               <div>
                 <p className="font-semibold text-red-400">High / Alert</p>
-                <p className="text-sm text-gray-400">Warning conditions</p>
+                <p className="text-sm text-slate-500">Warning conditions</p>
               </div>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-700">
-            <p className="text-sm text-gray-400">
-              Data Source: <span className="text-white font-semibold">{data.data_source}</span> • 
-              Last Updated: <span className="text-white font-semibold">{getTimeAgo(data.last_updated)}</span>
+          <div className="mt-4 border-t border-slate-200 pt-4">
+            <p className="text-sm text-slate-500">
+              Data Source: <span className="font-semibold text-slate-900">{data.data_source}</span> • Last Updated: <span className="font-semibold text-slate-900">{getTimeAgo(data.last_updated)}</span>
             </p>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
