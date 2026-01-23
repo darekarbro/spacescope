@@ -237,41 +237,47 @@ export default function AdminMissionsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Breadcrumb */}
-      <div className="mb-4">
-        <Link href="/admin" className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
-          ← Back to Admin Dashboard
-        </Link>
-      </div>
-
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Manage Missions</h1>
-        <button
-          onClick={() => {
-            setIsCreating(!isCreating);
-            if (isCreating) handleCancel();
-          }}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-        >
-          {isCreating ? 'Cancel' : 'Create New Mission'}
-        </button>
-      </div>
-
-      {message && (
-        <div
-          className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100'
-              : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100'
-          }`}
-        >
-          {message.text}
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <div className="mx-auto max-w-6xl space-y-6">
+        {/* Breadcrumb */}
+        <div className="mb-4">
+          <Link href="/admin" className="text-indigo-600 hover:text-indigo-800">
+            ← Back to Admin Dashboard
+          </Link>
         </div>
-      )}
 
-      {isCreating && (
-        <Card className="mb-8">
+        <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Mission Control</p>
+              <h1 className="text-4xl font-bold text-slate-900">Manage Missions</h1>
+            </div>
+            <button
+              onClick={() => {
+                setIsCreating(!isCreating);
+                if (isCreating) handleCancel();
+              }}
+              className="rounded-lg border border-indigo-200 bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-px hover:bg-indigo-700"
+            >
+              {isCreating ? 'Cancel' : 'Create New Mission'}
+            </button>
+          </div>
+        </div>
+
+        {message && (
+          <div
+            className={`rounded-2xl border px-5 py-3 text-sm font-semibold ${
+              message.type === 'success'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : 'border-rose-200 bg-rose-50 text-rose-700'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {isCreating && (
+          <Card className="mb-8 bg-white/90 shadow-sm">
           <CardHeader>
             <CardTitle>{editingId ? 'Edit Mission' : 'Create New Mission'}</CardTitle>
           </CardHeader>
@@ -558,83 +564,85 @@ export default function AdminMissionsPage() {
               </div>
             </form>
           </CardContent>
-        </Card>
-      )}
+          </Card>
+        )}
 
       {/* Missions List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All Missions ({missions.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <section className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-xl font-semibold text-slate-900">All Missions ({missions.length})</h2>
+        </div>
+        <div className="px-6 py-6 space-y-4">
           {fetchLoading ? (
-            <div className="text-center py-8">Loading missions...</div>
+            <div className="text-center py-8 text-slate-500">Loading missions...</div>
           ) : missions.length === 0 ? (
-            <div className="text-center py-8 text-neutral-500">No missions found. Create your first mission!</div>
+            <div className="text-center py-8 text-slate-500">No missions found. Create your first mission!</div>
           ) : (
             <div className="space-y-4">
               {missions.map((mission) => (
-                <Card key={mission.id} variant="outline">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold">{mission.name}</h3>
-                        <p className="text-sm text-neutral-500 mb-2">
-                          {mission.agency} • 
-                          <span className={`ml-1 px-2 py-0.5 rounded text-xs font-medium ${
-                            mission.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' :
-                            mission.status === 'active' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' :
-                            mission.status === 'planned' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
-                            mission.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' :
-                            'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100'
-                          }`}>
-                            {mission.status}
-                          </span> • 
+                <article
+                  key={mission.id}
+                  className="rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_15px_35px_rgba(15,23,42,0.08)]"
+                >
+                  <div className="flex flex-col gap-5 md:flex-row md:items-start">
+                    <div className="flex-1 space-y-3">
+                      <h3 className="text-2xl font-semibold text-slate-900">{mission.name}</h3>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                        <span>{mission.agency}</span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-600 font-medium">
                           {new Date(mission.launch_date).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
-                          {mission.description}
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          {mission.objectives && mission.objectives.length > 0 && (
-                            <span className="text-neutral-500">
-                              📋 {mission.objectives.length} objectives
-                            </span>
-                          )}
-                          {mission.crew && mission.crew.length > 0 && (
-                            <span className="text-neutral-500">
-                              👨‍🚀 {mission.crew.length} crew members
-                            </span>
-                          )}
-                          {mission.timeline && mission.timeline.length > 0 && (
-                            <span className="text-neutral-500">
-                              📅 {mission.timeline.length} timeline events
-                            </span>
-                          )}
-                        </div>
+                        </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.2em] ${
+                            mission.status === 'completed'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : mission.status === 'active'
+                              ? 'bg-sky-100 text-sky-800'
+                              : mission.status === 'planned'
+                              ? 'bg-amber-100 text-amber-800'
+                              : mission.status === 'cancelled'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-slate-100 text-slate-800'
+                          }`}
+                        >
+                          {mission.status}
+                        </span>
                       </div>
-                      <div className="flex gap-2 ml-4">
-                        <button
-                          onClick={() => handleEdit(mission)}
-                          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(mission.id)}
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                        >
-                          Delete
-                        </button>
+                      <p className="text-sm text-slate-600 line-clamp-2">{mission.description}</p>
+                      <div className="flex flex-wrap gap-3 text-xs text-slate-500">
+                        {mission.objectives && mission.objectives.length > 0 && (
+                          <span className="flex items-center gap-1">📋 {mission.objectives.length} objectives</span>
+                        )}
+                        {mission.crew && mission.crew.length > 0 && (
+                          <span className="flex items-center gap-1">👨‍🚀 {mission.crew.length} crew members</span>
+                        )}
+                        {mission.timeline && mission.timeline.length > 0 && (
+                          <span className="flex items-center gap-1">📅 {mission.timeline.length} timeline events</span>
+                        )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex gap-3 md:flex-col">
+                      <button
+                        onClick={() => handleEdit(mission)}
+                        className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(mission.id)}
+                        className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 shadow-sm transition hover:border-rose-300 hover:bg-rose-100"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </article>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
+  </div>
   );
 }
