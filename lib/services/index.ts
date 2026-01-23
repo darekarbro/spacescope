@@ -134,3 +134,6 @@ export const missionService = {
     return api.get(MISSIONS_ENDPOINTS.TIMELINE);
   },
 };
+
+// Re-export Learn Service
+export * from './learnService';

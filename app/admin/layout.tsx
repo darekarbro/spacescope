@@ -7,6 +7,7 @@ const ADMIN_LINKS = [
   { name: 'Dashboard', href: '/admin' },
   { name: 'Missions', href: '/admin/missions' },
   { name: 'Events', href: '/admin/events' },
+  { name: 'Learn', href: '/admin/learn' },
   { name: 'Scientists', href: '/admin/scientists' },
   { name: 'Reports', href: '/admin/reports' },
 ];

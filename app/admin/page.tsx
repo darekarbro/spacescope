@@ -7,7 +7,7 @@ export default function AdminDashboard() {
       <h1 className="text-4xl font-bold mb-8">Admin Dashboard</h1>
 
       {/* Quick Navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <Link href="/admin/missions" className="block">
           <Card className="hover:shadow-lg transition cursor-pointer bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800">
             <CardContent className="p-6 text-center">
@@ -21,6 +21,14 @@ export default function AdminDashboard() {
             <CardContent className="p-6 text-center">
               <div className="text-4xl mb-2">📅</div>
               <div className="font-semibold text-purple-700 dark:text-purple-300">Manage Events</div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/admin/learn" className="block">
+          <Card className="hover:shadow-lg transition cursor-pointer bg-cyan-50 dark:bg-cyan-950 border-cyan-200 dark:border-cyan-800">
+            <CardContent className="p-6 text-center">
+              <div className="text-4xl mb-2">📚</div>
+              <div className="font-semibold text-cyan-700 dark:text-cyan-300">Manage Learn</div>
             </CardContent>
           </Card>
         </Link>

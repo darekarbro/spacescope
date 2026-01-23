@@ -77,6 +77,17 @@ export const LEARNING_ENDPOINTS = {
   CARDS: `${API_BASE}/api/learning/cards/`,
 };
 
+// Learn Content Endpoints
+export const LEARN_ENDPOINTS = {
+  // Categories
+  CATEGORIES: `${API_BASE}/api/learn/categories/`,
+  CATEGORY_DETAIL: (id: number) => `${API_BASE}/api/learn/categories/${id}/`,
+  // Contents
+  CONTENTS: `${API_BASE}/api/learn/contents/`,
+  CONTENT_DETAIL: (id: number) => `${API_BASE}/api/learn/contents/${id}/`,
+  CONTENT_UPLOAD_IMAGE: (id: number) => `${API_BASE}/api/learn/contents/${id}/upload-image/`,
+};
+
 // Admin Endpoints
 export const ADMIN_ENDPOINTS = {
   DASHBOARD: `${API_BASE}/api/admin/dashboard/`,
