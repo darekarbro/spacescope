@@ -7,8 +7,8 @@ import React from 'react';
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Hide Navbar/Footer for any /explore route (including subroutes)
-  const hideNavFooter = pathname.startsWith('/explore');
+  // Hide Navbar/Footer for any /explore route (including subroutes) and admin routes
+  const hideNavFooter = pathname.startsWith('/explore') || pathname.startsWith('/admin');
   return (
     <>
       {!hideNavFooter && <Navbar />}
